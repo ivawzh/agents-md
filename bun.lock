@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "agentsmd",
+      "name": "agents-md",
       "devDependencies": {
         "@biomejs/biome": "latest",
         "@types/bun": "latest",

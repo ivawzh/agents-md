@@ -1,17 +1,17 @@
-# agentsmd
+# agents-md
 
 A typescript library
 
 ## Installation
 
 ```bash
-bun add agentsmd
+bun add agents-md
 ```
 
 ## Usage
 
 ```typescript
-import { greet } from 'agentsmd';
+import { greet } from 'agents-md';
 
 console.log(greet('World')); // Hello, World!
 ```
