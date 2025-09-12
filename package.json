@@ -1,5 +1,5 @@
 {
-	"name": "agentsmd",
+	"name": "agents-md",
 	"description": "A typescript library",
 	"version": "0.0.0-placeholder",
 	"type": "module",
@@ -45,7 +45,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/ivawzh/agentsmd.git"
+		"url": "git+https://github.com/ivawzh/agents-md.git"
 	},
 	"peerDependencies": {
 		"typescript": ">=4.5.0"
@@ -58,9 +58,9 @@
 	"simple-git-hooks": {
 		"pre-commit": "bun run lint:fix && git add ."
 	},
-	"homepage": "https://github.com/ivawzh/agentsmd#readme",
+	"homepage": "https://github.com/ivawzh/agents-md#readme",
 	"bugs": {
-		"url": "https://github.com/ivawzh/agentsmd/issues"
+		"url": "https://github.com/ivawzh/agents-md/issues"
 	},
 	"license": "MIT"
 }
