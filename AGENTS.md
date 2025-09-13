@@ -164,13 +164,13 @@ export type Issue = { level: 'warn' | 'error'; message: string; where?: string }
 
 export type Output = {
   path: string;                    // target file path (AGENTS.md)
-  bytes: number;                   // output size
-  sources: { path?: string; plugin?: string; bytes: number }[];
+  chars: number;                   // output size
+  sources: { path?: string; plugin?: string; chars: number }[];
 }
 
 export type JsonReport = {
   outputs: Output[];
-  totals: { outputs: number; bytes: number; sources: number };
+  totals: { outputs: number; chars: number; sources: number };
   limits?: { violated: boolean; details: string[] };
 }
 ```

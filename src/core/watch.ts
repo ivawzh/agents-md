@@ -10,7 +10,7 @@ export async function watch(
 	const run = async () => {
 		const outputs = await compose({ ...config, cwd })
 		for (const o of outputs) {
-			console.log(`wrote ${o.path} (${o.bytes} bytes)`)
+			console.log(`wrote ${o.path} (${o.chars} chars)`)
 		}
 	}
 

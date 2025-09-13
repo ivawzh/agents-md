@@ -10,12 +10,12 @@ export async function run(argv = process.argv.slice(2)) {
 	return yargs(hideBin(['', '', ...argv]))
 		.command(
 			'init',
-			'migrate existing files and scaffold config',
+			'initialize agents-md in this project',
 			() => {},
 			async () => {
 				const outputs = await init({})
 				for (const o of outputs) {
-					console.log(`wrote ${o.path} (${o.bytes} bytes)`)
+					console.log(`wrote ${o.path} (${o.chars} chars)`)
 				}
 			},
 		)
@@ -26,7 +26,7 @@ export async function run(argv = process.argv.slice(2)) {
 			async () => {
 				const outputs = await compose({})
 				for (const o of outputs) {
-					console.log(`wrote ${o.path} (${o.bytes} bytes)`)
+					console.log(`wrote ${o.path} (${o.chars} chars)`)
 				}
 			},
 		)
@@ -42,11 +42,11 @@ export async function run(argv = process.argv.slice(2)) {
 				} else {
 					for (const o of summary.outputs) {
 						console.log(
-							`${o.path} - ${o.bytes} bytes from ${o.sources.length} sources`,
+							`${o.path} - ${o.chars} chars from ${o.sources.length} sources`,
 						)
 					}
 					console.log(
-						`Totals: ${summary.totals.outputs} files, ${summary.totals.bytes} bytes, ${summary.totals.sources} sources`,
+						`Totals: ${summary.totals.outputs} files, ${summary.totals.chars} chars, ${summary.totals.sources} sources`,
 					)
 				}
 			},

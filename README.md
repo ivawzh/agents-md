@@ -40,8 +40,7 @@ To have multiple `AGENTS.md` files for dynamic location-based context, simply ad
 ## CLI
 
 - `agents-md init`
-  - Migrate any `AGENTS.md` or `CLAUDE.md` into fragments (e.g., `project.agents.md`).
-  - Scaffold `agents-md.config.ts`.
+  - Initialize agents-md in this project.
 - `agents-md compose`
   - Build outputs from fragments and plugins.
 - `agents-md report [--json]`

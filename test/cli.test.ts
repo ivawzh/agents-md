@@ -46,7 +46,9 @@ test('cli init scaffolds config and migrates AGENTS.md', async () => {
 		path.join(tmp, 'agents-md.config.ts'),
 		'utf8',
 	)
-	expect(config).toContain('AgentsMdConfig')
+	expect(config).toContain(
+		"include: ['**/agents-md/**/*.md', '**/*.agents.md']",
+	)
 	const generated = await fs.readFile(path.join(tmp, 'AGENTS.md'), 'utf8')
 	expect(generated).toContain('Legacy')
 	expect(output).toMatch(/created agents-md.config.ts/)
@@ -58,5 +60,6 @@ test('cli report outputs json', async () => {
 	const out = await runCli(tmp, ['report', '--json'])
 	const data = JSON.parse(out)
 	expect(data.outputs[0].path).toBe('AGENTS.md')
-	expect(data.outputs[0].bytes).toBeGreaterThan(0)
+	expect(data.outputs[0].chars).toBeGreaterThan(0)
+	expect(data.totals.chars).toBeGreaterThan(0)
 })
