@@ -1,0 +1,276 @@
+# Design
+
+Internal spec and implementation plan. The README is the user intro; this file is for architecture, detailed interfaces, and decisions.
+
+## Goals
+
+- Compose canonical `AGENTS.md` from small fragments and plugins.
+- Deterministic outputs with nearest‑wins routing and explicit overrides.
+- Zero‑config defaults; ergonomic overrides when needed.
+- Fast, safe, CI‑friendly; clear exit codes and reporting.
+- Installable and runnable across npm/pnpm/yarn/bun.
+
+## Non‑Goals
+
+- No network access by default; plugins must be local‑code aware.
+- No runtime code execution from fragments (imports are file content only).
+- No editor extensions in core (document hooks, not implement them).
+
+## Stack & Compatibility
+
+- Runtime: Bun 1.x (Node APIs compatible); support Node 18+ via published package.
+- CLI: yargs for command/flag parsing.
+- Tests: `bun test`.
+- Bundling/Publish: bunup; ship ESM with a small CJS shim if needed; add `bin` entry for CLI.
+- Invocation: `npx`/`pnpm dlx`/`yarn dlx`/`bunx` should work.
+
+## Architecture
+
+- CLI (`src/cli`)
+  - yargs command modules: `init`, `compose`, `report`, `watch`, `help`, `version`.
+  - Minimal options; avoid advanced flags in v0.
+- Core (`src/core`)
+  - `config.ts`: discover/load/merge config; defaults.
+  - `discovery.ts`: globbing, filter via `includeFiles`, ignore rules.
+  - `directives.ts`: parse HTML comment directives and apply per‑fragment.
+  - `plugins.ts`: plugin lifecycle, scan and validate.
+  - `compose.ts`: target resolution, ordering, annotation, truncation, write.
+  - `report.ts`: compute summaries and JSON payloads.
+  - `logger.ts`: leveled logs; `--silent` flag.
+  - `fs.ts`: IO helpers (safe write, banner insertion, header detection).
+- Watcher (`src/watch`)
+  - `fs.watch` with debounced rebuild; fallback polling where needed.
+
+## CLI Spec
+
+- `agents-md init`
+  - If `CLAUDE.md` exists, move it to `project.agents.md` and edit `CLAUDE.md` to onliner `@AGENTS.md`.
+  - Move any existing `AGENTS.md` files' content to `<"project" | directory-name>.agents.md`.
+  - Create a config file `agents-md.config.ts` with defaults.
+  - Run `agents-md compose` to generate `AGENTS.md` files from inputs.
+
+- `agents-md compose`
+  - No flags in v0. Uses config/includes for discovery.
+
+- `agents-md report`
+  - Human view
+    - Report on the current state:
+      - `AGENTS.md` files:
+        - Directory tree for all `AGENTS.md` files
+        - Character size and token predictions
+        - if oversized
+          - Warn with colorized output on over-size `AGENTS.md` and list their sourced inputs in descending order of size.
+      - Bad comment directives
+        - Missing imports
+        - Missing targets
+  - JSON view for machine readability
+
+- `agents-md watch`
+  - Rebuild on changes.
+
+Exit codes: 0 ok, 1 error, 2 invalid config, 4 limit violation.
+
+## Quick Start
+
+1. Install with your preferred package manager, e.g.
+
+    ```bash
+    bun install agents-md -D
+    ```
+
+2. Initialize with:
+
+    ```bash
+    bun agents-md init
+    ```
+
+    This will move any existing `AGENTS.md` or `CLAUDE.md` files to `<"project" if root | directory-name>.agents.md` and scaffold a config file `agents-md.config.ts` to get started quickly.
+
+    **Important**: `AGENTS.md` files are now codegen and managed by agents-md. ***We SHOULD NOT HAND-WRITE `AGENTS.md` files anymore***.
+
+3. Write new documents or reshape existing ones in any of the following path formats:
+   - `**/agents-md/*.md`
+   - `**/*.agents.md`
+   - `**/<customised-directories>/*.md`
+   - `**/*.<customised-file-formats>`
+
+    These files will be included in the composition process.
+
+4. Compose `AGENTS.md` files with:
+
+    ```bash
+    bun agents-md compose
+    ```
+
+    This will codegen `AGENTS.md` file(s) from our inputs.
+
+If we want to have multiple `AGENTS.md` files for dynamic location-based context, simply add a new empty `AGENTS.md` file in any target directory and rerun `bun agents-md compose`.
+
+## Config Schema (TypeScript)
+
+```ts
+// agents-md.config.ts
+export type AgentsMdConfig = {
+  // Discovery
+  include?: string[];              // ['**/agents-md/**/*.md','**/*.agents.md']
+  exclude?: string[];              // ['**/node_modules/**','**/.git/**']
+  includeFiles?: (ctx: { path: string; cwd: string }) => boolean;
+
+  // Targets and routing
+  targets?: TargetRule[];          // Explicit outputs and selection rules
+  defaultTarget?: 'nearest' | 'root';
+
+  // Composition behavior
+  order?: 'path' | 'weight' | 'explicit';
+  annotateSources?: boolean;       // add `<!-- source: ... -->`
+  truncate?: { atBytes?: number; strategy?: 'end' | 'middle' };
+
+  // Limits
+  limits?: {
+    warnSourceBytes?: number;
+    maxSourceBytes?: number;
+    warnOutputBytes?: number;
+    maxOutputBytes?: number;
+  };
+
+  // Plugins
+  plugins?: Plugin[];
+}
+
+export type TargetRule = {
+  name?: string;                   // logical name (e.g., 'root')
+  path: string;                    // absolute or repo‑relative directory
+  match?: string[];                // extra globs routed here
+}
+
+export type Plugin = {
+  name: string;
+  provides?: ('fragments' | 'metadata')[];
+  scan?: (ctx: { cwd: string }) => AsyncIterable<Fragment>; // yields fragments
+  validate?: (ctx: { cwd: string }) => Issue[];             // optional
+  options?: Record<string, unknown>;
+}
+
+export type Fragment = {
+  id?: string;                     // stable key for tracking
+  content: string;                 // markdown
+  source: { path?: string; plugin?: string };
+  target?: TargetSelector;         // per‑fragment override
+  weight?: number;                 // sorting weight
+}
+
+export type TargetSelector = 'nearest' | 'root' | { path: string } | { name: string };
+export type Issue = { level: 'warn' | 'error'; message: string; where?: string };
+
+export type Output = {
+  path: string;                    // target file path (AGENTS.md)
+  bytes: number;                   // output size
+  sources: { path?: string; plugin?: string; bytes: number }[];
+}
+
+export type JsonReport = {
+  outputs: Output[];
+  totals: { outputs: number; bytes: number; sources: number };
+  limits?: { violated: boolean; details: string[] };
+}
+```
+
+Config discovery: look for `agents-md.config.ts`, then `.mjs`/`.js`; ignore local overrides unless explicitly supported in future.
+
+## Markdown Directives (Spec)
+
+- Syntax: HTML comments, `agents-md:` prefix, space/comma separated `key=value` pairs.
+- Supported keys:
+  - `target`: `nearest` | `root` | relative dir (e.g., `../docs`) | named target.
+  - `import`: `@<relative-path>`; multiple allowed; processed in order.
+  - `weight`: integer; lower sorts first among same target.
+  - `title`: string; optional section heading hint (no auto‑insertion by core).
+- Precedence: directives > `targets` rules > `defaultTarget`.
+- Errors: missing import files (warn), circular imports (error), unknown target (warn).
+
+## Composition Algorithm
+
+1. Discover fragments via `include` globs and `includeFiles` filter.
+2. Run plugins: `scan()` yields additional fragments; collect and tag with `plugin` source.
+3. Parse directives (per fragment); resolve `import`s; detect cycles; inline imported content before host content.
+4. Determine target for each fragment: directive → named/explicit `targets` → nearest directory with `AGENTS.md` → root.
+5. Group by target; sort within target by `weight` then path.
+6. Compose content; optionally annotate sources; apply truncation; check limits.
+7. Write outputs with banner header.
+
+Banner header: `<!-- Generated by agents-md: DO NOT EDIT DIRECTLY -->`.
+
+## Init & Migration
+
+- Move existing `AGENTS.md` or `CLAUDE.md` into `*.agents.md` fragments.
+- Create `agents-md.config.ts` with defaults if missing.
+- Optionally rewrite `CLAUDE.md` to `@AGENTS.md` for interop.
+- Never overwrite hand‑edited files without backup (e.g., `.bak`).
+
+## Reporting
+
+- Human: tree of targets, sizes, token estimates (heuristic), top‑N sources by size, warnings.
+- JSON (`--json`): `JsonReport` above; stable keys, deterministic ordering.
+
+## Watch Mode
+
+- Use `fs.watch` recursively where supported; debounce (e.g., 100–300ms).
+- On change: re-run discovery for affected subtree; incremental compose for impacted targets only.
+
+## Limits & Truncation
+
+- Limits apply to source fragments and final outputs; warn vs hard fail based on thresholds.
+- Truncation strategies: `end` (simple cut) or `middle` (keep head+tail with ellipsis marker).
+
+## Determinism
+
+- Sorting is stable and deterministic across platforms.
+
+## Safety & Idempotency
+
+- Writes only change files when content differs.
+- Avoid advanced flags in v0; changes are only written when content differs.
+- Generated banner prevents accidental hand edits.
+
+## Testing Strategy (bun test)
+
+- Unit: directives parser, discovery filters, ordering, limits.
+- Integration: compose on fixtures (single/multi‑target, imports, plugins, errors).
+- CLI: yargs command wiring, exit codes.
+- Snapshot: output content with source annotations and banners.
+
+## Packaging & Distribution
+
+- Build with bunup: ESM bundle for library; CLI entry with Node shebang.
+- `package.json`:
+  - `type: module`, `exports` for ESM; add `main` CJS shim if required.
+  - `bin: { "agents-md": "dist/cli.js" }`.
+  - Engines: `node >=18 || bun >=1`.
+- Publish to npm for cross‑ecosystem install.
+
+## Telemetry & Privacy
+
+- No telemetry. No network by default. Plugins run locally.
+
+## Roadmap
+
+- Official plugin kit (JSDoc, TS types, DB schemas).
+- Per‑target summaries and tokenization adapters.
+- Cross‑target references and lightweight templating.
+- Watch perf improvements and editor integrations.
+ - Dedupe strategies (content/path) — future option if needed.
+- Import paths not working
+  - Comment directive paths must start with `@` for Claude Code compatibility
+  - Use relative paths from the importing file's directory
+  - Check file exists: `<!-- agents-md: import=@./path/to/file.md -->`
+
+## Roadmap
+
+- Provider framework for more dynamic content. E.g. jsdoc extractions.
+- Better hot reloading supports for ecosystem tools
+- MCP cross-directory reference support
+
+## Credits
+
+- OpenAI's efforts on `AGENTS.md` standardization.
+- Inspired by [Ruler](https://github.com/intellectronica/ruler) for distribution to agents that don't read `AGENTS.md` directly.
