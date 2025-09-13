@@ -2,7 +2,7 @@
 
 > Let's make [AGENTS.md](https://agents.md/) great again! :joy:
 
-Compose canonical `AGENTS.md` from sustainable file structures and plugins. Keep agent context current, composable, and shareable with your human docs.
+Compose canonical `AGENTS.md` from sustainable file structures and plugins. Keep agent context current, composable, and shareable with your human docs. Abstract-context-as-code is what we aim to achieve.
 
 ## Why agents-md?
 
@@ -24,90 +24,52 @@ agents-md focuses on improving flexibility and extensibility of `AGENTS.md`, whi
 
 ## Quick Start
 
-- Install: `bun install -D agents-md` (npm/yarn/pnpm also work)
-- Initialize: `bun agents-md init` (scaffolds config, migrates existing files)
-- Compose: `bun agents-md compose` (generates `AGENTS.md` files)
+- Install: `bun install -D agents-md` (or `npm i -D`, `pnpm add -D`, `yarn add -D`)
+- Initialize: `bun agents-md init`
+- Update fragment files in any of these path formats:
+  - `**/agents-md/**/*.md`
+  - `**/*.agents.md`
+  - `**/<customised-directories>/*.md`
+  - `**/*.<customised-file-formats>`
+- Compose: `bun agents-md compose`
 
 Generated files are owned by agents-md. Don't hand‑edit `AGENTS.md` — edit fragments instead.
 
 To have multiple `AGENTS.md` files for dynamic location-based context, simply add an empty `AGENTS.md` file in any target directory and rerun `bun agents-md compose`.
 
-## Core Interfaces
-
-### CLI
+## CLI
 
 - `agents-md init`
   - Migrate any `AGENTS.md` or `CLAUDE.md` into fragments (e.g., `project.agents.md`).
   - Scaffold `agents-md.config.ts`.
-- `agents-md compose [paths...]`
+- `agents-md compose`
   - Build outputs from fragments and plugins.
-- `agents-md report [--json] [--target <path|name>]`
-  - Show outputs, sizes, token estimates, and warnings.
+- `agents-md report [--json]`
+  - Show outputs, sizes, token estimates, and warnings (use `--json` for CI).
 - `agents-md watch`
-  - Rebuild on changes; mirrors `compose` flags.
+  - Rebuild on changes.
 - `agents-md help|version`
 
-Exit codes: `0` success, `1` generic error, `2` invalid config, `3` composition differences with `--check`, `4` budget violation.
+Exit codes: `0` success, `1` generic error, `2` invalid config, `4` limit violation.
 
-### Configuration
+## Configuration
 
-```ts
-// agents-md.config.ts
-export type AgentsMdConfig = {
-  // Discovery
-  include?: string[];              // Globs to include (default: ['**/agents-md/**/*.md', '**/*.agents.md'])
-  exclude?: string[];              // Globs to ignore (node_modules, .git by default)
-  includeFiles?: (ctx: { path: string; cwd: string }) => boolean; // Optional advanced filter
+Use `agents-md.config.ts` (or `.js/.mjs`) at repo root. Defaults are zero‑config; customize only as needed. See full schema in `docs/design.md`.
 
-  // Targets and routing
-  targets?: TargetRule[];          // Explicit outputs and selection rules
-  defaultTarget?: 'nearest' | 'root';
+Key options
 
-  // Composition behavior
-  order?: 'path' | 'weight' | 'explicit';
-  dedupe?: false | 'content' | 'path';
-  annotateSources?: boolean;       // Add source comments in outputs
-  truncate?: { atCharacters?: number; strategy?: 'end' | 'middle' };
-
-  // Budgets
-  budgets?: {
-    warnSourceCharacters?: number;
-    maxSourceCharacters?: number;
-    warnOutputCharacters?: number;
-    maxOutputCharacters?: number;
-  };
-
-  // Plugins
-  plugins?: Plugin[];
-}
-
-export type TargetRule = {
-  name?: string;                   // logical name (e.g., 'root')
-  path: string;                    // absolute or repo‑relative directory
-  match?: string[];                // extra globs routed here
-}
-
-export type Plugin = {
-  name: string;
-  provides?: ('fragments' | 'metadata')[];
-  scan?: (ctx: { cwd: string }) => AsyncIterable<Fragment>; // yields fragments
-  validate?: (ctx: { cwd: string }) => Issue[];             // optional
-  options?: Record<string, unknown>;
-}
-
-export type Fragment = {
-  id?: string;                     // stable key for dedupe
-  content: string;                 // markdown
-  source: { path?: string; plugin?: string };
-  target?: TargetSelector;         // per‑fragment override
-  weight?: number;                 // sorting weight
-}
-
-export type TargetSelector = 'nearest' | 'root' | { path: string } | { name: string };
-export type Issue = { level: 'warn' | 'error'; message: string; where?: string };
-```
-
-Defaults aim for zero‑config; override only what you need.
+| Option | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `include` | `string[]` | `['**/agents-md/**/*.md','**/*.agents.md']` | Fragment discovery globs |
+| `exclude` | `string[]` | `['**/node_modules/**','**/.git/**']` | Ignore patterns |
+| `includeFiles` | `(ctx) => boolean` | `undefined` | Advanced per‑file filter |
+| `targets` | `TargetRule[]` | `undefined` | Explicit output directories/rules |
+| `defaultTarget` | `'nearest'|'root'` | `'nearest'` | Fallback routing behavior |
+| `order` | 'path', 'weight', or 'explicit' | `'path'` | Fragment sort strategy |
+| `annotateSources` | `boolean` | `true` | Add source comments in outputs |
+| `truncate` | `{ atBytes, strategy }` | `undefined` | Trim oversized outputs |
+| `limits` | `{ warn/max source/output }` | `undefined` | Size limits and warnings |
+| `plugins` | `Plugin[]` | `[]` | Generate extra fragments from code |
 
 ### Markdown Directives
 
@@ -129,15 +91,14 @@ Rules: keys are comma/space separated (`key=value`); paths start with `@` for Cl
 - Discovery: collect fragments from `include` globs and plugin `scan()`.
 - Targeting: directive > `targets` rules > `defaultTarget` (nearest).
 - Ordering: by `weight`, then by path (stable and deterministic).
-- Dedupe: optional by `content` or `path`.
 - Annotation: optionally emit `<!-- source: path | plugin -->` comments.
 - Output: write one `AGENTS.md` per selected target with a generated‑file banner.
 
 ## Reporting
 
-- Shows: target tree, output sizes, token estimates, source counts, budget status.
+- Shows: target tree, output sizes, token estimates, source counts, limit status.
 - JSON mode: `agents-md report --json` for CI and tooling.
-- `--check` with `compose` fails on diffs or budget violations (useful in CI).
+
 
 ## Interop & Migration
 
