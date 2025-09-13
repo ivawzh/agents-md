@@ -24,7 +24,7 @@ async function loadFragment(
 		if (directives.imports) {
 			const parts: string[] = []
 			for (const imp of directives.imports) {
-				const rel = imp.startsWith('@') ? imp.slice(1) : imp
+				const rel = imp.path.startsWith('@') ? imp.path.slice(1) : imp.path
 				const resolved = path.resolve(path.dirname(abs), rel)
 				try {
 					const frag = await loadFragment(
@@ -35,7 +35,12 @@ async function loadFragment(
 					parts.push(frag.content)
 				} catch (err: unknown) {
 					if ((err as NodeJS.ErrnoException)?.code === 'ENOENT') {
-						console.warn(`missing import: ${path.relative(cwd, resolved)}`)
+						console.warn(
+							`missing import: ${path.relative(
+								cwd,
+								resolved,
+							)} (referenced in ${file}:${imp.line})`,
+						)
 						continue
 					}
 					throw err
@@ -45,12 +50,6 @@ async function loadFragment(
 			content = parts.join('\n')
 		}
 		return { path: file, content, directives }
-	} catch (err: unknown) {
-		if ((err as NodeJS.ErrnoException)?.code === 'ENOENT') {
-			console.warn(`missing import: ${file}`)
-			return { path: file, content: '', directives: {} }
-		}
-		throw err
 	} finally {
 		seen.delete(abs)
 	}
