@@ -26,3 +26,8 @@ export interface Output {
 	bytes: number
 	sources: { path: string; bytes: number }[]
 }
+
+export interface JsonReport {
+	outputs: Output[]
+	totals: { outputs: number; bytes: number; sources: number }
+}

@@ -21,6 +21,9 @@
 			}
 		}
 	},
+	"bin": {
+		"agents-md": "dist/cli.js"
+	},
 	"scripts": {
 		"build": "bunup",
 		"dev": "bunup --watch",
@@ -63,6 +66,10 @@
 		"url": "https://github.com/ivawzh/agents-md/issues"
 	},
 	"license": "MIT",
+	"engines": {
+		"node": ">=18",
+		"bun": ">=1"
+	},
 	"dependencies": {
 		"fast-glob": "^3.3.3",
 		"yargs": "^18.0.0"
