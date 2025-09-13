@@ -113,7 +113,7 @@ export async function compose(
 				lines.push(`<!-- source: ${frag.path} -->`)
 			}
 			lines.push(frag.content.trim())
-			sources.push({ path: frag.path, bytes: Buffer.byteLength(frag.content) })
+			sources.push({ path: frag.path, chars: Array.from(frag.content).length })
 		}
 		const content = `${lines.join('\n\n')}\n`
 		await fs.mkdir(path.dirname(target), { recursive: true })
@@ -125,7 +125,7 @@ export async function compose(
 		}
 		outputs.push({
 			path: path.relative(cwd, target),
-			bytes: Buffer.byteLength(content),
+			chars: Array.from(content).length,
 			sources,
 		})
 	}

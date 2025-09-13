@@ -23,11 +23,11 @@ export interface Directive {
 
 export interface Output {
 	path: string
-	bytes: number
-	sources: { path: string; bytes: number }[]
+	chars: number
+	sources: { path: string; chars: number }[]
 }
 
 export interface JsonReport {
 	outputs: Output[]
-	totals: { outputs: number; bytes: number; sources: number }
+	totals: { outputs: number; chars: number; sources: number }
 }
