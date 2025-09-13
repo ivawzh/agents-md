@@ -1,6 +1,6 @@
 # agents-md
 
-> Let's make [AGENTS.md](https://agents.md/) great again!  :joy:
+> Let's make [AGENTS.md](https://agents.md/) great again! :joy:
 
 ## Overview
 
@@ -12,8 +12,8 @@ We support:
   - Write small partials anywhere or in a conventional folder
 - Multi-level outputs
   - Compose inputs into one `AGENTS.md` per target directory while preserving "nearest wins" behavior unless configured otherwise. No duplicate outputs.
-- Dynamic providers
-  - Provide extra context from code, e.g. extract from JSDoc/TS, package.json scripts, config files, and more.
+- Plugins
+  - Provide extra context from code, e.g. extract JSDoc, TypeScript types, database schemas, and more.
 
 ## Quick Start
 
@@ -29,16 +29,17 @@ We support:
     bun agents-md init
     ```
 
-    This will move any existing `AGENTS.md` or `CLAUDE.md` files to `<"project" | directory-name>.agents.md` and scaffold a config file `agents-md.config.ts` to get started quickly.
+    This will move any existing `AGENTS.md` or `CLAUDE.md` files to `<"project" if root | directory-name>.agents.md` and scaffold a config file `agents-md.config.ts` to get started quickly.
 
     **Important**: `AGENTS.md` files are now codegen and managed by agents-md. ***We SHOULD NOT HAND-WRITE `AGENTS.md` files anymore***.
 
 3. Write new documents or reshape existing ones in any of the following path formats:
    - `**/agents-md/*.md`
    - `**/*.agents.md`
-   - `**/<configured-included-directories>/*.md`
+   - `**/<customised-directories>/*.md`
+   - `**/*.<customised-file-formats>`
 
-  These files will be included in the composition process.
+    These files will be included in the composition process.
 
 4. Compose `AGENTS.md` files with:
 
@@ -72,7 +73,7 @@ agents-md focuses on improving flexibility and extensibility of `AGENTS.md`, whi
 - Central config `agents-md.config.ts` (optional)
   - Configurables
     - includes and excludes
-    - providers
+    - plugins
     - size budgets and truncations
     - output locations (default to the nearest sibling and parent `AGENTS.md`)
 - Markdown comment directives
@@ -82,13 +83,14 @@ agents-md focuses on improving flexibility and extensibility of `AGENTS.md`, whi
 
 ## CLI Commands
 
-- init
-  - Move any existing `AGENTS.md` files to `<"project" | directory-name>.agents.md`.
-  - Scaffold a config file to get started quickly.
+- `init`
   - If `CLAUDE.md` exists, move it to `project.agents.md` and edit `CLAUDE.md` to onliner `@AGENTS.md`.
-- compose
+  - Move any existing `AGENTS.md` files' content to `<"project" | directory-name>.agents.md`.
+  - Create a config file `agents-md.config.ts` with defaults.
+  - Run `agents-md compose` to generate `AGENTS.md` files from inputs.
+- `compose`
   - Compose partials and providers into one `AGENTS.md` per configured output. Preserves nearest‑wins semantics. See details at [How agents-md composes](#how-agents-md-composes).
-- report
+- `report`
   - Report on the current state:
     - `AGENTS.md` files:
       - Directory tree
@@ -97,8 +99,8 @@ agents-md focuses on improving flexibility and extensibility of `AGENTS.md`, whi
     - Bad comment directives
       - Missing imports
       - Missing targets
-- help
-- version
+- `help`
+- `version`
 
 All commands have help subcommands.
 
@@ -109,10 +111,10 @@ When you run `agents-md compose`, it will:
 1. If missing `AGENTS.md` from root directory, create one.
 1. Look for existing `AGENTS.md` files in the codebase. Use them as outputs.
 1. Gather inputs (configurable via `agents-md.config.ts`):
-    1. by `config.includeFiles` & `config.excludeFiles`, e.g.
+    1. by `config.includeFiles`, e.g.
        1. `**/agents-md/*.md`
        1. `**/*.agents.md`
-    1. by `config.providers`
+    1. by `config.plugins`
     1. by markdown comment directive imports
 1. Group inputs by their target `AGENTS.md` based on the comment directives (highest priority), the config, and fallback to nearest wins policy.
 1. Compose into target `AGENTS.md` files with source comments for their origin.
@@ -121,177 +123,108 @@ When you run `agents-md compose`, it will:
 
 The `agents-md.config.ts` file provides fine-grained control over file discovery, content generation, and output behavior.
 
-### Configuration Options Reference
-
-| Option | Type | Description | Default |
-|--------|------|-------------|---------|
-| `includeFiles` | `(options) => boolean` | Function to determine which files to include | Built-in patterns |
-| `excludeFiles` | `(options) => boolean` | Function to determine which files to exclude | Common ignore patterns |
-| `providers` | `ProviderConfig[]` | Dynamic content providers to enable | `[]` (disabled) |
-| `sizeBudgets.maxSize` | `number` | Maximum file size in bytes (hard limit). Truncates if it exceeds this size. | `100000` |
-| `sizeBudgets.warnSize` | `number` | Warning threshold in bytes | `50000` |
-
-### Basic Configuration Example
+### Default Configuration
 
 ```ts
-// agents-md.config.ts
+// agents-md.config.ts (generated by `agents-md init`)
 export const config = () => {
+  const includeDirectories = [
+    'agents-md',  // **/agents-md/**/*.md
+    // 'docs',    // **/docs/**/*.md (uncomment to include)
+  ]
+
+  const includeFileFormats = [
+    '.agents.md',  // **/*.agents.md
+    // '.ai.md',   // **/*.ai.md (uncomment to include)
+  ]
+
+  const excludedDirectories = [
+    'node_modules',
+    '.git',
+    'dist',
+    'build'
+  ]
+
   return {
-    // File discovery patterns
+    // File discovery - full control
     includeFiles: ({ path, currentDirectory }) => {
-      return path.includes('/agents-md/') && path.endsWith('.md') ||
-             path.endsWith('.agents.md') ||
-             path.includes('/docs/agents/')  // custom directory
+      // Default pattern: check directories and file formats
+      const matchesDirectory = includeDirectories.some(dir => path.includes(`/${dir}/`) && path.endsWith('.md'))
+      const matchesFormat = includeFileFormats.some(ext => path.endsWith(ext))
+
+      // Exclude common unwanted paths
+      const isExcluded = excludedDirectories.some(dir => path.includes(`/${dir}/`))
+
+      return (matchesDirectory || matchesFormat) && !isExcluded
     },
 
-    excludeFiles: ({ path, currentDirectory }) => {
-      return path.includes('node_modules') ||
-             path.includes('/.git/') ||
-             path.includes('/secrets/') ||
-             path.includes('/temp/')
-    },
-
-    // Size limits and warnings
     sizeBudgets: {
-      maxSize: 100000,  // 100KB - hard limit
-      warnSize: 50000   // 50KB - warning threshold
+      maxSizePerSourceFile: 100000,  // 100KB hard limit
+      warnSizePerSourceFile: 50000   // 50KB warning
     },
 
-    // Dynamic content providers (opt-in)
-    providers: [
-      { name: 'scripts', enabled: true },
-      { name: 'jsdoc', enabled: false, options: { maxExports: 10 } },
-      { name: 'ci', enabled: true },
-      { name: 'lint', enabled: false }
+    plugins: [
+      {
+        name: 'jsdoc',
+        options: {
+          exportedOnly: true,
+          truncateAfterLength: 1000
+        }
+      }
     ]
   }
 }
 ```
 
+**Configuration Options:**
+
+- `includeFiles`: Function to determine which files to include
+- `plugins`: Dynamic content generators
+- `sizeBudgets`: File size limits and warnings
+
 ## Markdown Directives
 
-Control composition behavior with HTML comment directives in your markdown files.
+Use HTML comment directives to control file routing and import shared content.
 
-### Target Directive
-
-Route a file to a specific output location instead of the default "nearest wins" behavior.
+### Target Files to Specific Outputs
 
 ```md
 <!-- agents-md: target=root -->
-# My Global Documentation
-This content will go to the root AGENTS.md file.
+Content goes to root AGENTS.md
 ```
 
 ```md
 <!-- agents-md: target=nearest -->
-# Local Feature Docs
-This content goes to the nearest AGENTS.md (default behavior).
+Content goes to specific file
 ```
 
-**Target Values:**
-- `root` - Route to root `./AGENTS.md`
-- `nearest` - Route to nearest `AGENTS.md` (default)
-- `./path/to/file.md` - Route to specific file path
+**Target options:** `root` | `nearest` (default)
 
-### Import Directive
-
-Include content from other files during composition.
+### Import Shared Content
 
 ```md
-<!-- agents-md: import=@./shared/setup.md -->
-<!-- agents-md: import=@./shared/common-patterns.md -->
+<!-- agents-md: import=@./shared/common.md -->
+<!-- agents-md: import=@../standards/api.md -->
 
-# My Feature Documentation
-
-This file will include the imported content above this section.
+# My Documentation
+Imported content appears above this section.
 ```
 
-```md
-<!-- agents-md: import=@../common/api-standards.md -->
-<!-- This imports from a parent directory -->
+**Import rules:**
 
-# Package Documentation
-The API standards will be included before this content.
-```
+- Paths start with `@` (Claude Code compatibility)
+- Relative to importing file's directory
+- Processed in order
 
-**Import Path Rules:**
-- Must start with `@` (required for Claude Code agent compatibility)
-- Relative paths resolved from the importing file's directory
-- Imported files are processed recursively (can contain their own directives)
-- Import order matters - files are included in the order they appear
+## Plugins
 
-### Directive Examples
+Generate context based on your code.
 
-#### Multi-target composition
-```md
-<!-- In: features/auth.agents.md -->
-<!-- agents-md: target=root -->
+**Planned:**
 
-# Authentication System
+- JSDoc Plugin - API documentation extraction
 
-Core authentication functionality for the entire application.
-
----
-
-<!-- agents-md: target=./features/AGENTS.md -->
-
-# Feature-specific Auth Details
-
-Implementation details specific to this feature module.
-```
-
-#### Shared content with imports
-```md
-<!-- In: shared/common.agents.md -->
-# Common Patterns
-
-Standard patterns used across the project.
-
-<!-- In: features/payments.agents.md -->
-<!-- agents-md: import=@../shared/common.agents.md -->
-
-# Payment Processing
-
-This section includes common patterns above, plus payment-specific docs.
-```
-
-#### Conditional content
-```md
-<!-- agents-md: target=root -->
-# Production Deployment Guide
-
-<!-- agents-md: import=@./deployment/production.md -->
-<!-- agents-md: import=@./deployment/monitoring.md -->
-
----
-
-<!-- agents-md: target=./docs/AGENTS.md -->
-# Development Setup
-
-<!-- agents-md: import=@./deployment/development.md -->
-<!-- agents-md: import=@./deployment/testing.md -->
-```
-
-### Best Practices
-
-- **One directive per line** - Each directive should be on its own line for clarity
-- **Place directives at the top** - Target directives work best when placed at the beginning of files
-- **Import before content** - Place import directives before your main content
-- **Use consistent paths** - Establish path conventions for your project
-- **Test your directives** - Use `agents-md compose --dry-run` to preview results
-
-## Dynamic Providers
-
-- scripts provider
-  - Reads package.json to propose Setup/Build/Test/Lint/Typecheck commands. No execution by default.
-- ci provider
-  - Surfaces canonical checks based on CI workflow files (e.g., how tests are run in CI).
-- jsdocQuickFacts provider
-  - Extracts a short "Quick API facts" section for key exports (names, roles, critical params). Not a full API dump.
-- lint/format provider
-  - Detects eslint/prettier configs and proposes relevant commands and conventions.
-
-All providers prioritize brevity and clarity (copy/paste‑safe commands, minimal narrative). Providers aim to be deterministic and redaction‑aware.
+Enable in config: `plugins: [{ name: 'jsdoc', options: { exportedOnly: true, truncateAfterLength: 1000 } }]`
 
 ## FAQ
 
@@ -307,6 +240,10 @@ All providers prioritize brevity and clarity (copy/paste‑safe commands, minima
     ```md
     @AGENTS.md # this will import the content of AGENTS.md
     ```
+- Import paths not working
+  - Comment directive paths must start with `@` for Claude Code compatibility
+  - Use relative paths from the importing file's directory
+  - Check file exists: `<!-- agents-md: import=@./path/to/file.md -->`
 
 ## Roadmap
 
