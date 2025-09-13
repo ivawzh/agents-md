@@ -1,0 +1,255 @@
+# Design
+
+## Overview
+
+agents-md compose canonical `AGENTS.md` files from organized, sustainable, and configurable file structures. Designed to keep agent context up-to-date, dynamic, and shareable with your human documents.
+
+We support:
+
+- Multi‑file authoring
+  - Write small partials anywhere or in a conventional folder
+- Multi-level outputs
+  - Compose inputs into one `AGENTS.md` per target directory while preserving "nearest wins" behavior unless configured otherwise. No duplicate outputs.
+- Plugins
+  - Provide extra context from code, e.g. extract JSDoc, TypeScript types, database schemas, and more.
+
+## Quick Start
+
+1. Install with your preferred package manager, e.g.
+
+    ```bash
+    bun install agents-md -D
+    ```
+
+2. Initialize with:
+
+    ```bash
+    bun agents-md init
+    ```
+
+    This will move any existing `AGENTS.md` or `CLAUDE.md` files to `<"project" if root | directory-name>.agents.md` and scaffold a config file `agents-md.config.ts` to get started quickly.
+
+    **Important**: `AGENTS.md` files are now codegen and managed by agents-md. ***We SHOULD NOT HAND-WRITE `AGENTS.md` files anymore***.
+
+3. Write new documents or reshape existing ones in any of the following path formats:
+   - `**/agents-md/*.md`
+   - `**/*.agents.md`
+   - `**/<customised-directories>/*.md`
+   - `**/*.<customised-file-formats>`
+
+    These files will be included in the composition process.
+
+4. Compose `AGENTS.md` files with:
+
+    ```bash
+    bun agents-md compose
+    ```
+
+    This will codegen `AGENTS.md` file(s) from our inputs.
+
+If we want to have multiple `AGENTS.md` files for dynamic location-based context, simply add a new empty `AGENTS.md` file in any target directory and rerun `bun agents-md compose`.
+
+## Why agents-md?
+
+Common pain points today:
+
+- Single, static `AGENTS.md` per directory; no native "imports" or multi‑file composition.
+- No glob‑based includes in `AGENTS.md` itself; no spec for dynamic content (e.g., JSDoc or config extraction).
+- Some tools don't read `AGENTS.md`;
+- Existing options like [Ruler](https://github.com/intellectronica/ruler) assume `.ruler/` and don't curate dynamic content outside of those directories.
+
+agents-md focuses on improving flexibility and extensibility of `AGENTS.md`, while remaining compatible with code agents that don't read `AGENTS.md` directly.
+
+## Features
+
+- Codegen `AGENTS.md`
+  - Generate or update `AGENTS.md` files, similar in spirit to Ruler's centralized approach—but more flexible.
+- Multiple input file shims
+  - Per‑directory file patterns:
+    - `**/<input-name>.agents.md` (e.g., `setup.agents.md`, `testing.agents.md`)
+    - `**/agents-md/**/*.md` (conventional folder for fragments)
+- Central config `agents-md.config.ts` (optional)
+  - Configurables
+    - includes and excludes
+    - plugins
+    - size budgets and truncations
+    - output locations (default to the nearest sibling and parent `AGENTS.md`)
+- Markdown comment directives
+  - Directive comments may override the default behavior. For examples:
+    - override the "nearest" output target to route a fragment file to the root `AGENTS.md`.
+    - import a file
+
+## CLI Commands
+
+- `init`
+  - If `CLAUDE.md` exists, move it to `project.agents.md` and edit `CLAUDE.md` to onliner `@AGENTS.md`.
+  - Move any existing `AGENTS.md` files' content to `<"project" | directory-name>.agents.md`.
+  - Create a config file `agents-md.config.ts` with defaults.
+  - Run `agents-md compose` to generate `AGENTS.md` files from inputs.
+- `compose`
+  - Compose partials and providers into one `AGENTS.md` per configured output. Preserves nearest‑wins semantics. See details at [How agents-md composes](#how-agents-md-composes).
+- `report`
+  - Report on the current state:
+    - `AGENTS.md` files:
+      - Directory tree
+      - Size and token predictions
+      - Warn with colorized output on over-size `AGENTS.md` and list their sourced inputs in descending order of size.
+    - Bad comment directives
+      - Missing imports
+      - Missing targets
+- `help`
+- `version`
+
+All commands have help subcommands.
+
+### How agents-md composes
+
+When you run `agents-md compose`, it will:
+
+1. If missing `AGENTS.md` from root directory, create one.
+1. Look for existing `AGENTS.md` files in the codebase. Use them as outputs.
+1. Gather inputs (configurable via `agents-md.config.ts`):
+    1. by `config.includeFiles`, e.g.
+       1. `**/agents-md/*.md`
+       1. `**/*.agents.md`
+    1. by `config.plugins`
+    1. by markdown comment directive imports
+1. Group inputs by their target `AGENTS.md` based on the comment directives (highest priority), the config, and fallback to nearest wins policy.
+1. Compose into target `AGENTS.md` files with source comments for their origin.
+
+## Configuration
+
+The `agents-md.config.ts` file provides fine-grained control over file discovery, content generation, and output behavior.
+
+### Default Configuration
+
+```ts
+// agents-md.config.ts (generated by `agents-md init`)
+export const config = () => {
+  const includeDirectories = [
+    'agents-md',  // **/agents-md/**/*.md
+    // 'docs',    // **/docs/**/*.md (uncomment to include)
+  ]
+
+  const includeFileFormats = [
+    '.agents.md',  // **/*.agents.md
+    // '.ai.md',   // **/*.ai.md (uncomment to include)
+  ]
+
+  const excludedDirectories = [
+    'node_modules',
+    '.git',
+    'dist',
+    'build'
+  ]
+
+  return {
+    // File discovery - full control
+    includeFiles: ({ path, currentDirectory }) => {
+      // Default pattern: check directories and file formats
+      const matchesDirectory = includeDirectories.some(dir => path.includes(`/${dir}/`) && path.endsWith('.md'))
+      const matchesFormat = includeFileFormats.some(ext => path.endsWith(ext))
+
+      // Exclude common unwanted paths
+      const isExcluded = excludedDirectories.some(dir => path.includes(`/${dir}/`))
+
+      return (matchesDirectory || matchesFormat) && !isExcluded
+    },
+
+    sizeBudgets: {
+      maxSizePerSourceFile: 100000,  // 100KB hard limit
+      warnSizePerSourceFile: 50000   // 50KB warning
+    },
+
+    plugins: [
+      {
+        name: 'jsdoc',
+        options: {
+          exportedOnly: true,
+          truncateAfterLength: 1000
+        }
+      }
+    ]
+  }
+}
+```
+
+**Configuration Options:**
+
+- `includeFiles`: Function to determine which files to include
+- `plugins`: Dynamic content generators
+- `sizeBudgets`: File size limits and warnings
+
+## Markdown Directives
+
+Use HTML comment directives to control file routing and import shared content.
+
+### Target Files to Specific Outputs
+
+```md
+<!-- agents-md: target=root -->
+Content goes to root AGENTS.md
+```
+
+```md
+<!-- agents-md: target=nearest -->
+Content goes to specific file
+```
+
+**Target options:** `root` | `nearest` (default)
+
+### Import Shared Content
+
+```md
+<!-- agents-md: import=@./shared/common.md -->
+<!-- agents-md: import=@../standards/api.md -->
+
+# My Documentation
+Imported content appears above this section.
+```
+
+**Import rules:**
+
+- Paths start with `@` (Claude Code compatibility)
+- Relative to importing file's directory
+- Processed in order
+
+## Plugins
+
+Generate context based on your code.
+
+**Planned:**
+
+- JSDoc Plugin - API documentation extraction
+
+Enable in config: `plugins: [{ name: 'jsdoc', options: { exportedOnly: true, truncateAfterLength: 1000 } }]`
+
+## FAQ
+
+- Why not just hand‑write `AGENTS.md`?
+  - You can. agents‑md helps keep it organized and sustainable, especially when we want to share human readable files with agents.
+- What about agents that don't read `AGENTS.md`?
+  - Use the optional distribute step with Ruler to generate the appropriate files from the same source content.
+- Do I need both local ./.agents-md.ts and a root config?
+  - No. Many teams succeed with zero config or with a single root config. Local configs are for edge cases and package‑specific needs.
+- Can Claude Code agent read `AGENTS.md`?
+  - No. Best way to support it is to have `CLAUDE.md` with content:
+
+    ```md
+    @AGENTS.md # this will import the content of AGENTS.md
+    ```
+- Import paths not working
+  - Comment directive paths must start with `@` for Claude Code compatibility
+  - Use relative paths from the importing file's directory
+  - Check file exists: `<!-- agents-md: import=@./path/to/file.md -->`
+
+## Roadmap
+
+- Provider framework for more dynamic content. E.g. jsdoc extractions.
+- Better hot reloading supports for ecosystem tools
+- MCP cross-directory reference support
+
+## Credits
+
+- OpenAI's efforts on `AGENTS.md` standardization.
+- Inspired by [Ruler](https://github.com/intellectronica/ruler) for distribution to agents that don't read `AGENTS.md` directly.
