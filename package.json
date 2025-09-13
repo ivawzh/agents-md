@@ -62,5 +62,9 @@
 	"bugs": {
 		"url": "https://github.com/ivawzh/agents-md/issues"
 	},
-	"license": "MIT"
+	"license": "MIT",
+	"dependencies": {
+		"fast-glob": "^3.3.3",
+		"yargs": "^18.0.0"
+	}
 }
