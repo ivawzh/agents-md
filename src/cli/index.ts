@@ -41,12 +41,13 @@ export async function run(argv = process.argv.slice(2)) {
 					console.log(JSON.stringify(summary, null, 2))
 				} else {
 					for (const o of summary.outputs) {
+						const name = o.path === 'AGENTS.md' ? 'AGENTS.md (root)' : o.path
 						console.log(
-							`${o.path} - ${o.chars} chars from ${o.sources.length} sources`,
+							`${name} - ${o.chars} chars from ${o.sources.length} sources`,
 						)
 					}
 					console.log(
-						`Totals: ${summary.totals.outputs} files, ${summary.totals.chars} chars, ${summary.totals.sources} sources`,
+						`Totals: ${summary.totals.outputs} AGENTS.md files, ${summary.totals.chars} chars, ${summary.totals.sources} sources`,
 					)
 				}
 			},

@@ -6,9 +6,10 @@ const PAIR_RE = /(\w+)\s*=\s*("[^"]*"|[^,\s]+)/g
 
 export function parseDirectives(markdown: string): Directive {
 	const directive: Directive = {}
-	const match = markdown.match(COMMENT_RE_SINGLE)
+	const match = COMMENT_RE_SINGLE.exec(markdown)
 	if (!match) return directive
 	const body = match[1]
+	const line = markdown.slice(0, match.index ?? 0).split(/\r?\n/).length
 	for (const pair of body.matchAll(PAIR_RE)) {
 		const key = pair[1]
 		let value = pair[2]
@@ -21,7 +22,9 @@ export function parseDirectives(markdown: string): Directive {
 				break
 			case 'import':
 				directive.imports ??= []
-				directive.imports.push(...value.split(',').map((s) => s.trim()))
+				directive.imports.push(
+					...value.split(',').map((s) => ({ path: s.trim(), line })),
+				)
 				break
 			case 'weight':
 				directive.weight = Number.parseInt(value, 10)

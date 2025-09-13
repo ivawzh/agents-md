@@ -63,3 +63,13 @@ test('cli report outputs json', async () => {
 	expect(data.outputs[0].chars).toBeGreaterThan(0)
 	expect(data.totals.chars).toBeGreaterThan(0)
 })
+
+test('cli report prints friendly output', async () => {
+	const tmp = await fs.mkdtemp(
+		path.join(os.tmpdir(), 'agents-md-report-human-'),
+	)
+	await fs.writeFile(path.join(tmp, 'a.agents.md'), 'A')
+	const out = await runCli(tmp, ['report'])
+	expect(out).toContain('AGENTS.md (root) -')
+	expect(out).toContain('Totals: 1 AGENTS.md files')
+})

@@ -101,7 +101,7 @@ test('defaultTarget root and annotateSources disabled', async () => {
 	expect(out).not.toContain('<!-- source:')
 })
 
-test('missing imports warn but do not throw', async () => {
+test('missing imports warn with file and line', async () => {
 	const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'agents-md-missing-'))
 	await fs.writeFile(
 		path.join(tmp, 'main.agents.md'),
@@ -114,7 +114,20 @@ test('missing imports warn but do not throw', async () => {
 	console.warn = orig
 	const out = await fs.readFile(path.join(tmp, 'AGENTS.md'), 'utf8')
 	expect(out).toContain('Main')
-	expect(warnings.some((w) => w.includes('missing import'))).toBe(true)
+	expect(warnings).toContain(
+		'missing import: missing.md (referenced in main.agents.md:1)',
+	)
+})
+
+test('fragments without directives compose without warnings', async () => {
+	const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'agents-md-nodir-'))
+	await fs.writeFile(path.join(tmp, 'plain.agents.md'), 'Just text')
+	const warnings: string[] = []
+	const orig = console.warn
+	console.warn = (msg) => warnings.push(String(msg))
+	await compose({ cwd: tmp })
+	console.warn = orig
+	expect(warnings).toEqual([])
 })
 
 test('compose does not rewrite unchanged outputs', async () => {
