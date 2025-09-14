@@ -57,7 +57,7 @@ Internal spec and implementation plan. The README is the user intro; this file i
     - Report on the current state:
       - `AGENTS.md` files:
         - Directory tree for all `AGENTS.md` files
-        - Character size and token predictions
+        - Character size (k chars) and token predictions
         - if oversized
           - Warn with colorized output on over-size `AGENTS.md` and list their sourced inputs in descending order of size.
       - Bad comment directives

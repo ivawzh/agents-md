@@ -44,7 +44,7 @@ To have multiple `AGENTS.md` files for dynamic location-based context, simply ad
 - `agents-md compose`
   - Build outputs from fragments and plugins.
 - `agents-md report [--json]`
-  - Show outputs, sizes, token estimates, and warnings (use `--json` for CI).
+  - Show outputs, sizes (k chars), token estimates, and warnings (use `--json` for CI).
 - `agents-md watch`
   - Rebuild on changes.
 - `agents-md help|version`
