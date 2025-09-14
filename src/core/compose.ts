@@ -108,10 +108,15 @@ export async function compose(
 		const lines = [BANNER]
 		const sources: Output['sources'] = []
 		for (const frag of frags) {
+			const segment: string[] = []
 			if (config.annotateSources !== false) {
-				lines.push(`<!-- source: ${frag.path} -->`)
+				segment.push(`<!-- source: ${frag.path} -->`)
 			}
-			lines.push(frag.content.trim())
+			segment.push(frag.content.trim())
+			if (config.annotateSources !== false) {
+				segment.push(`<!-- /source: ${frag.path} -->`)
+			}
+			lines.push(segment.join('\n'))
 			sources.push({ path: frag.path, chars: Array.from(frag.content).length })
 		}
 		const content = `${lines.join('\n\n')}\n`
