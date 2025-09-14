@@ -65,7 +65,7 @@ Key options
 | `targets` | `TargetRule[]` | `undefined` | Explicit output directories/rules |
 | `defaultTarget` | `'nearest'|'root'` | `'nearest'` | Fallback routing behavior |
 | `order` | 'path', 'weight', or 'explicit' | `'path'` | Fragment sort strategy |
-| `annotateSources` | `boolean` | `true` | Add source comments in outputs |
+| `annotateSources` | `boolean` | `true` | Wrap fragments with `<!-- source: ... -->` / `<!-- /source: ... -->` comments |
 | `truncate` | `{ atBytes, strategy }` | `undefined` | Trim oversized outputs |
 | `limits` | `{ warn/max source/output }` | `undefined` | Size limits and warnings |
 | `plugins` | `Plugin[]` | `[]` | Generate extra fragments from code |
@@ -90,7 +90,7 @@ Rules: keys are comma/space separated (`key=value`); paths start with `@` for Cl
 - Discovery: collect fragments from `include` globs and plugin `scan()`.
 - Targeting: directive > `targets` rules > `defaultTarget` (nearest).
 - Ordering: by `weight`, then by path (stable and deterministic).
-- Annotation: optionally emit `<!-- source: path | plugin -->` comments.
+- Annotation: optionally wrap fragments with `<!-- source: path | plugin -->` and `<!-- /source: path | plugin -->` comments.
 - Output: write one `AGENTS.md` per selected target with a generated‑file banner.
 
 ## Reporting

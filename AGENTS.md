@@ -122,7 +122,7 @@ export type AgentsMdConfig = {
 
   // Composition behavior
   order?: 'path' | 'weight' | 'explicit';
-  annotateSources?: boolean;       // add `<!-- source: ... -->`
+  annotateSources?: boolean;       // wrap fragments with `<!-- source: ... -->` and `<!-- /source: ... -->`
   truncate?: { atBytes?: number; strategy?: 'end' | 'middle' };
 
   // Limits
