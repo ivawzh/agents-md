@@ -2,6 +2,7 @@
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { compose } from '../core/compose'
+import { formatChars } from '../core/format'
 import { init } from '../core/init'
 import { summarize } from '../core/report'
 import { watch } from '../core/watch'
@@ -15,7 +16,7 @@ export async function run(argv = process.argv.slice(2)) {
 			async () => {
 				const outputs = await init({})
 				for (const o of outputs) {
-					console.log(`wrote ${o.path} (${o.chars} chars)`)
+					console.log(`wrote ${o.path} (${formatChars(o.chars)} chars)`)
 				}
 			},
 		)
@@ -26,7 +27,7 @@ export async function run(argv = process.argv.slice(2)) {
 			async () => {
 				const outputs = await compose({})
 				for (const o of outputs) {
-					console.log(`wrote ${o.path} (${o.chars} chars)`)
+					console.log(`wrote ${o.path} (${formatChars(o.chars)} chars)`)
 				}
 			},
 		)
@@ -43,11 +44,11 @@ export async function run(argv = process.argv.slice(2)) {
 					for (const o of summary.outputs) {
 						const name = o.path === 'AGENTS.md' ? 'AGENTS.md (root)' : o.path
 						console.log(
-							`${name} - ${o.chars} chars from ${o.sources.length} sources`,
+							`${name} - ${formatChars(o.chars)} chars from ${o.sources.length} sources`,
 						)
 					}
 					console.log(
-						`Totals: ${summary.totals.outputs} AGENTS.md files, ${summary.totals.chars} chars, ${summary.totals.sources} sources`,
+						`Totals: ${summary.totals.outputs} AGENTS.md files, ${formatChars(summary.totals.chars)} chars, ${summary.totals.sources} sources`,
 					)
 				}
 			},

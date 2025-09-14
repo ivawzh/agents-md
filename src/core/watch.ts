@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import { compose } from './compose'
+import { formatChars } from './format'
 import type { AgentsMdConfig } from './types'
 
 export async function watch(
@@ -10,7 +11,7 @@ export async function watch(
 	const run = async () => {
 		const outputs = await compose({ ...config, cwd })
 		for (const o of outputs) {
-			console.log(`wrote ${o.path} (${o.chars} chars)`)
+			console.log(`wrote ${o.path} (${formatChars(o.chars)} chars)`)
 		}
 	}
 

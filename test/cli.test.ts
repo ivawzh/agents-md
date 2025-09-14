@@ -71,5 +71,6 @@ test('cli report prints friendly output', async () => {
 	await fs.writeFile(path.join(tmp, 'a.agents.md'), 'A')
 	const out = await runCli(tmp, ['report'])
 	expect(out).toContain('AGENTS.md (root) -')
+	expect(out).toMatch(/k chars/)
 	expect(out).toContain('Totals: 1 AGENTS.md files')
 })
