@@ -4,7 +4,7 @@ Internal spec and implementation plan. The README is the user intro; this file i
 
 ## Goals
 
-- Compose canonical `AGENTS.md` from small fragments and plugins.
+- Compose canonical `AGENTS.md` from small fragments.
 - Deterministic outputs with nearest‑wins routing and explicit overrides.
 - Zero‑config defaults; ergonomic overrides when needed.
 - Fast, safe, CI‑friendly; clear exit codes and reporting.
@@ -12,7 +12,7 @@ Internal spec and implementation plan. The README is the user intro; this file i
 
 ## Non‑Goals
 
-- No network access by default; plugins must be local‑code aware.
+- No network access by default.
 - No runtime code execution from fragments (imports are file content only).
 - No editor extensions in core (document hooks, not implement them).
 
@@ -33,7 +33,6 @@ Internal spec and implementation plan. The README is the user intro; this file i
   - `config.ts`: discover/load/merge config; defaults.
   - `discovery.ts`: globbing, filter via `includeFiles`, ignore rules.
   - `directives.ts`: parse HTML comment directives and apply per‑fragment.
-  - `plugins.ts`: plugin lifecycle, scan and validate.
   - `compose.ts`: target resolution, ordering, annotation, truncation, write.
   - `report.ts`: compute summaries and JSON payloads.
   - `logger.ts`: leveled logs; `--silent` flag.
@@ -55,14 +54,13 @@ Internal spec and implementation plan. The README is the user intro; this file i
 - `agents-md report`
   - Human view
     - Report on the current state:
-      - `AGENTS.md` files:
+  - `AGENTS.md` files:
         - Directory tree for all `AGENTS.md` files
         - Character size and token predictions
         - if oversized
           - Warn with colorized output on over-size `AGENTS.md` and list their sourced inputs in descending order of size.
       - Bad comment directives
         - Missing imports
-        - Missing targets
   - JSON view for machine readability
 
 - `agents-md watch`
@@ -117,58 +115,42 @@ export type AgentsMdConfig = {
   includeFiles?: (ctx: { path: string; cwd: string }) => boolean;
 
   // Targets and routing
-  targets?: TargetRule[];          // Explicit outputs and selection rules
   defaultTarget?: 'nearest' | 'root';
 
   // Composition behavior
-  order?: 'path' | 'weight' | 'explicit';
   annotateSources?: boolean;       // wrap fragments with `<!-- source: ... -->` and `<!-- /source: ... -->`
-  truncate?: { atBytes?: number; strategy?: 'end' | 'middle' };
+  truncate?: { atChars?: number; strategy?: 'end' | 'middle' };
 
   // Limits
   limits?: {
-    warnSourceBytes?: number;
-    maxSourceBytes?: number;
-    warnOutputBytes?: number;
-    maxOutputBytes?: number;
+    warnSourceChars?: number;
+    maxSourceChars?: number;
+    warnOutputChars?: number;
+    maxOutputChars?: number;
   };
-
-  // Plugins
-  plugins?: Plugin[];
 }
 
-export type TargetRule = {
-  name?: string;                   // logical name (e.g., 'root')
-  path: string;                    // absolute or repo‑relative directory
-  match?: string[];                // extra globs routed here
+export interface Fragment {
+  path: string;
+  content: string;
+  directives: Directive;
 }
 
-export type Plugin = {
-  name: string;
-  provides?: ('fragments' | 'metadata')[];
-  scan?: (ctx: { cwd: string }) => AsyncIterable<Fragment>; // yields fragments
-  validate?: (ctx: { cwd: string }) => Issue[];             // optional
-  options?: Record<string, unknown>;
+export interface Directive {
+  target?: string;
+  imports?: { path: string; line: number }[];
+  weight?: number;
+  title?: string;
 }
 
-export type Fragment = {
-  id?: string;                     // stable key for tracking
-  content: string;                 // markdown
-  source: { path?: string; plugin?: string };
-  target?: TargetSelector;         // per‑fragment override
-  weight?: number;                 // sorting weight
-}
-
-export type TargetSelector = 'nearest' | 'root' | { path: string } | { name: string };
-export type Issue = { level: 'warn' | 'error'; message: string; where?: string };
-
-export type Output = {
+export type TargetSelector = 'nearest' | 'root' | { path: string };
+export interface Output {
   path: string;                    // target file path (AGENTS.md)
   chars: number;                   // output size
-  sources: { path?: string; plugin?: string; chars: number }[];
+  sources: { path?: string; chars: number }[];
 }
 
-export type JsonReport = {
+export interface JsonReport {
   outputs: Output[];
   totals: { outputs: number; chars: number; sources: number };
   limits?: { violated: boolean; details: string[] };
@@ -185,18 +167,17 @@ Config discovery: look for `agents-md.config.ts`, then `.mjs`/`.js`; ignore loca
   - `import`: `@<relative-path>`; multiple allowed; processed in order.
   - `weight`: integer; lower sorts first among same target.
   - `title`: string; optional section heading hint (no auto‑insertion by core).
-- Precedence: directives > `targets` rules > `defaultTarget`.
+- Precedence: directives > `defaultTarget`.
 - Errors: missing import files (warn), circular imports (error), unknown target (warn).
 
 ## Composition Algorithm
 
 1. Discover fragments via `include` globs and `includeFiles` filter.
-2. Run plugins: `scan()` yields additional fragments; collect and tag with `plugin` source.
-3. Parse directives (per fragment); resolve `import`s; detect cycles; inline imported content before host content.
-4. Determine target for each fragment: directive → named/explicit `targets` → nearest directory with `AGENTS.md` → root.
-5. Group by target; sort within target by `weight` then path.
-6. Compose content; optionally annotate sources; apply truncation; check limits.
-7. Write outputs with banner header.
+2. Parse directives (per fragment); resolve `import`s; detect cycles; inline imported content before host content.
+3. Determine target for each fragment: directive → nearest directory with `AGENTS.md` → root.
+4. Group by target; sort within target by `weight` then path.
+5. Compose content; optionally annotate sources; apply truncation; check limits.
+6. Write outputs with banner header.
 
 Banner header: `<!-- Generated by agents-md. Edit source fragments and run agents-md compose. -->`.
 
@@ -235,7 +216,7 @@ Banner header: `<!-- Generated by agents-md. Edit source fragments and run agent
 ## Testing Strategy (bun test)
 
 - Unit: directives parser, discovery filters, ordering, limits.
-- Integration: compose on fixtures (single/multi‑target, imports, plugins, errors).
+- Integration: compose on fixtures (single/multi‑target, imports, errors).
 - CLI: yargs command wiring, exit codes.
 - Snapshot: output content with source annotations and banners.
 

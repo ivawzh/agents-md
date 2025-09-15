@@ -119,7 +119,19 @@ export async function compose(
 			lines.push(segment.join('\n'))
 			sources.push({ path: frag.path, chars: Array.from(frag.content).length })
 		}
-		const content = `${lines.join('\n\n')}\n`
+		let content = `${lines.join('\n\n')}\n`
+		if (config.truncate?.atChars) {
+			const limit = config.truncate.atChars
+			const chars = Array.from(content)
+			if (chars.length > limit) {
+				if (config.truncate.strategy === 'middle') {
+					const half = Math.floor(limit / 2)
+					content = `${chars.slice(0, half).join('')}…${chars.slice(-half).join('')}`
+				} else {
+					content = chars.slice(0, limit).join('')
+				}
+			}
+		}
 		await fs.mkdir(path.dirname(target), { recursive: true })
 		const existing = existsSync(target)
 			? await fs.readFile(target, 'utf8')

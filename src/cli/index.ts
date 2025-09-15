@@ -14,9 +14,15 @@ export async function run(argv = process.argv.slice(2)) {
 			'initialize agents-md in this project',
 			() => {},
 			async () => {
-				const outputs = await init({})
+				const config = {}
+				const outputs = await init(config)
 				for (const o of outputs) {
 					console.log(`wrote ${o.path} (${formatChars(o.chars)} chars)`)
+				}
+				const summary = summarize(outputs, config)
+				if (summary.limits) {
+					for (const d of summary.limits.details) console.warn(d)
+					if (summary.limits.violated) process.exitCode = 4
 				}
 			},
 		)
@@ -25,9 +31,15 @@ export async function run(argv = process.argv.slice(2)) {
 			'compose AGENTS.md files',
 			() => {},
 			async () => {
-				const outputs = await compose({})
+				const config = {}
+				const outputs = await compose(config)
 				for (const o of outputs) {
 					console.log(`wrote ${o.path} (${formatChars(o.chars)} chars)`)
+				}
+				const summary = summarize(outputs, config)
+				if (summary.limits) {
+					for (const d of summary.limits.details) console.warn(d)
+					if (summary.limits.violated) process.exitCode = 4
 				}
 			},
 		)
@@ -36,8 +48,9 @@ export async function run(argv = process.argv.slice(2)) {
 			'compose and report outputs',
 			(y) => y.option('json', { type: 'boolean' }),
 			async (args) => {
-				const outputs = await compose({})
-				const summary = summarize(outputs)
+				const config = {}
+				const outputs = await compose(config)
+				const summary = summarize(outputs, config)
 				if (args.json) {
 					console.log(JSON.stringify(summary, null, 2))
 				} else {
@@ -50,7 +63,11 @@ export async function run(argv = process.argv.slice(2)) {
 					console.log(
 						`Totals: ${summary.totals.outputs} AGENTS.md files, ${formatChars(summary.totals.chars)} chars, ${summary.totals.sources} sources`,
 					)
+					if (summary.limits) {
+						for (const d of summary.limits.details) console.warn(d)
+					}
 				}
+				if (summary.limits?.violated) process.exitCode = 4
 			},
 		)
 		.command(
