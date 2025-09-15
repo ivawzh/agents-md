@@ -36,9 +36,8 @@ test('cli init scaffolds config and migrates AGENTS.md', async () => {
 	const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'agents-md-init-'))
 	await fs.writeFile(path.join(tmp, 'AGENTS.md'), 'Legacy')
 	const output = await runCli(tmp, ['init'])
-	const project = path.basename(tmp)
 	const fragment = await fs.readFile(
-		path.join(tmp, `${project}.agents.md`),
+		path.join(tmp, 'project.agents.md'),
 		'utf8',
 	)
 	expect(fragment).toContain('Legacy')

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import yargs from 'yargs'
+import yargs, { type ArgumentsCamelCase, type Argv } from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { compose } from '../core/compose'
 import { formatChars } from '../core/format'
@@ -7,7 +7,9 @@ import { init } from '../core/init'
 import { summarize } from '../core/report'
 import { watch } from '../core/watch'
 
-export async function run(argv = process.argv.slice(2)) {
+export async function run(
+	argv: string[] = process.argv.slice(2),
+): Promise<unknown> {
 	return yargs(hideBin(['', '', ...argv]))
 		.command(
 			'init',
@@ -46,8 +48,8 @@ export async function run(argv = process.argv.slice(2)) {
 		.command(
 			'report',
 			'compose and report outputs',
-			(y) => y.option('json', { type: 'boolean' }),
-			async (args) => {
+			(y: Argv) => y.option('json', { type: 'boolean' }),
+			async (args: ArgumentsCamelCase<{ json?: boolean }>) => {
 				const config = {}
 				const outputs = await compose(config)
 				const summary = summarize(outputs, config)

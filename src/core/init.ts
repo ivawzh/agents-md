@@ -7,7 +7,7 @@ export async function init(
 	config: AgentsMdConfig & { cwd?: string } = {},
 ): Promise<Output[]> {
 	const cwd = config.cwd ?? process.cwd()
-	const project = path.basename(cwd)
+	const project = 'project'
 	const fragment = path.join(cwd, `${project}.agents.md`)
 
 	const claude = path.join(cwd, 'CLAUDE.md')
