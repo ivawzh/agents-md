@@ -44,7 +44,7 @@ agents-md focuses on improving flexibility and extensibility of `AGENTS.md`, whi
 ## Quick Start
 
 - Install: `bun install -D agents-md` (or `npm i -D`, `pnpm add -D`, `yarn add -D`)
-- Initialize: `bun agents-md init` (skips if already initialized)
+- Initialize: `bun agents-md init` (creates root `AGENTS.md` if missing)
 - Update fragment files in any of these path formats:
   - `**/agents-md/**/*.md`
   - `**/*.agents.md`
@@ -59,7 +59,7 @@ To have multiple `AGENTS.md` files for dynamic location-based context, simply ad
 ## CLI
 
 - `agents-md init`
-  - Initialize agents-md in this project (use `compose` if already initialized).
+  - Initialize agents-md in this project; creates root `AGENTS.md` if missing (use `compose` if already initialized).
 - `agents-md compose`
   - Build outputs from fragments.
 - `agents-md report [--json]`
@@ -117,7 +117,7 @@ Rules: keys are comma/space separated (`key=value`); paths start with `@` for Cl
 
 ## Interop & Migration
 
-- `init` moves content from `AGENTS.md`/`CLAUDE.md` into fragments and scaffolds config.
+- `init` moves content from `AGENTS.md`/`CLAUDE.md` into fragments, scaffolds config, and creates a root `AGENTS.md` when absent.
 - For Claude Code, create `CLAUDE.md` with: `@AGENTS.md` (imports generated content).
 - Can be combined with distribution tools (e.g., Ruler) if needed.
 

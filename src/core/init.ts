@@ -1,7 +1,7 @@
 import { existsSync, promises as fs } from 'node:fs'
 import path from 'node:path'
 import fg from 'fast-glob'
-import { compose } from './compose'
+import { BANNER, compose } from './compose'
 import type { AgentsMdConfig, Output } from './types'
 
 export async function init(
@@ -60,6 +60,10 @@ export async function init(
 		'} satisfies AgentsMdConfig\n'
 	await fs.writeFile(configPath, body)
 	console.log('created agents-md.config.ts')
+
+	if (!existsSync(rootAgents)) {
+		await fs.writeFile(rootAgents, `${BANNER}\n`)
+	}
 
 	return compose({ ...config, cwd })
 }
