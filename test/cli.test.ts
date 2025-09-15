@@ -8,10 +8,11 @@ const __dirname = path.dirname(new URL(import.meta.url).pathname)
 
 function runCli(cwd: string, args: string[]): Promise<string> {
 	return new Promise((resolve, reject) => {
-		const bin = path
-			.resolve(__dirname, '../src/cli/index.ts')
-			.replace(/\\/g, '/')
-		const proc = spawn('bun', [bin, ...args], { cwd, stdio: 'pipe' })
+		const bin = path.resolve(__dirname, '../src/cli/index.ts')
+		const proc = spawn(process.execPath, [bin, ...args], {
+			cwd,
+			stdio: 'pipe',
+		})
 		let out = ''
 		proc.stdout.on('data', (d) => {
 			out += d.toString()
