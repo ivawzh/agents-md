@@ -1,5 +1,6 @@
 import { existsSync, promises as fs } from 'node:fs'
 import path from 'node:path'
+import fg from 'fast-glob'
 import { parseDirectives, stripDirectiveComments } from './directives'
 import { discover } from './discovery'
 import type { AgentsMdConfig, Fragment, Output } from './types'
@@ -99,6 +100,7 @@ export async function compose(
 		arr?.push(frag)
 	}
 	const outputs: Output[] = []
+	const written = new Set<string>()
 	for (const [target, frags] of groups) {
 		frags.sort(
 			(a, b) =>
@@ -145,6 +147,33 @@ export async function compose(
 			chars: Array.from(content).length,
 			sources,
 		})
+		written.add(target)
+	}
+	const existing = await fg('**/AGENTS.md', {
+		cwd,
+		ignore: config.exclude ?? ['**/node_modules/**', '**/.git/**'],
+		dot: true,
+	})
+	for (const rel of existing) {
+		const abs = path.join(cwd, rel)
+		if (written.has(abs)) continue
+		let prev: string | null = null
+		try {
+			prev = await fs.readFile(abs, 'utf8')
+		} catch {
+			// ignore
+		}
+		if (prev?.startsWith(BANNER)) {
+			const content = `${BANNER}\n`
+			if (prev !== content) {
+				await fs.writeFile(abs, content)
+			}
+			outputs.push({
+				path: rel,
+				chars: Array.from(content).length,
+				sources: [],
+			})
+		}
 	}
 	return outputs
 }
