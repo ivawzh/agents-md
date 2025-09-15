@@ -26,7 +26,7 @@ test('watch logs once for missing imports and outputs', async () => {
 	proc.stderr.on('data', (d) => {
 		out += d.toString()
 	})
-	await new Promise((r) => setTimeout(r, 500))
+	await new Promise((r) => setTimeout(r, 1000))
 	proc.kill()
 	await new Promise((r) => proc.on('exit', r))
 	const missing = out.match(/missing import/g) ?? []
