@@ -1,8 +1,9 @@
 # agents-md
 
 ```bash
-# 1. Write a fragment
-echo "Hello agents" > docs/project.agents.md
+# 1. Seed a couple of fragments with priorities
+printf '<!-- agents-md: priority=1 -->\nGeneral tips\n' > docs/notes.agents.md
+printf '<!-- agents-md: priority=5 -->\nHot fix first\n' > docs/urgent.agents.md
 
 # 2. Compose canonical AGENTS.md files
 bun agents-md compose
