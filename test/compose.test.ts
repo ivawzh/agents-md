@@ -153,7 +153,7 @@ test('missing imports warn with file and line', async () => {
 	const out = await fs.readFile(path.join(tmp, 'AGENTS.md'), 'utf8')
 	expect(out).toContain('Main')
 	expect(warnings).toContain(
-		'missing import: missing.md (referenced in main.agents.md:1)',
+		'[agents-md]: ❌ Missing import: missing.md (referenced in main.agents.md:1)',
 	)
 })
 
