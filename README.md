@@ -44,7 +44,7 @@ agents-md focuses on improving flexibility and extensibility of `AGENTS.md`, whi
 ## Quick Start
 
 - Install: `bun install -D agents-md` (or `npm i -D`, `pnpm add -D`, `yarn add -D`)
-- Initialize: `bun agents-md init`
+- Initialize: `bun agents-md init` (skips if already initialized)
 - Update fragment files in any of these path formats:
   - `**/agents-md/**/*.md`
   - `**/*.agents.md`
@@ -59,7 +59,7 @@ To have multiple `AGENTS.md` files for dynamic location-based context, simply ad
 ## CLI
 
 - `agents-md init`
-  - Initialize agents-md in this project.
+  - Initialize agents-md in this project (use `compose` if already initialized).
 - `agents-md compose`
   - Build outputs from fragments.
 - `agents-md report [--json]`
