@@ -1,5 +1,16 @@
 # agents-md
 
+```bash
+# 1. Write a fragment
+echo "Hello agents" > docs/project.agents.md
+
+# 2. Compose canonical AGENTS.md files
+bun agents-md compose
+
+# 3. Inspect the generated output
+cat AGENTS.md
+```
+
 > Let's make [AGENTS.md](https://agents.md/) great again! :joy:
 
 Compose canonical `AGENTS.md` from sustainable and elegant file structures. Keep agent context current, composable, and shareable with your human docs. Abstract-context-as-code is what we aim to achieve.
