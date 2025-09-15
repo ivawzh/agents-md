@@ -3,6 +3,7 @@ import path from 'node:path'
 import fg from 'fast-glob'
 import { parseDirectives, stripDirectiveComments } from './directives'
 import { discover } from './discovery'
+import { createAgentsMdPrefix } from './logger'
 import type { AgentsMdConfig, Fragment, Output } from './types'
 
 export const BANNER =
@@ -37,7 +38,7 @@ async function loadFragment(
 				} catch (err: unknown) {
 					if ((err as NodeJS.ErrnoException)?.code === 'ENOENT') {
 						console.warn(
-							`missing import: ${path.relative(
+							`${createAgentsMdPrefix()}: ❌ Missing import: ${path.relative(
 								cwd,
 								resolved,
 							)} (referenced in ${file}:${imp.line})`,

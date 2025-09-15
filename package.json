@@ -1,7 +1,7 @@
 {
 	"name": "agents-md",
 	"description": "A typescript library",
-	"version": "0.0.1-placeholder",
+	"version": "0.0.3-alpha",
 	"type": "module",
 	"files": [
 		"dist"
@@ -22,7 +22,7 @@
 		}
 	},
 	"bin": {
-		"agents-md": "dist/cli.js"
+		"agents-md": "dist/cli/index.js"
 	},
 	"scripts": {
 		"build": "bunup",

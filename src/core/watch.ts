@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { compose } from './compose'
 import { formatChars } from './format'
+import { createAgentsMdPrefix } from './logger'
 import type { AgentsMdConfig, Output } from './types'
 
 export async function watch(
@@ -33,14 +34,17 @@ export async function watch(
 		written = new Set(outputs.map((o) => o.path))
 		if (verbose) {
 			for (const o of outputs) {
-				console.log(`wrote ${o.path} (${formatChars(o.chars)} chars)`)
+				console.log(
+					`${createAgentsMdPrefix()}: ✓ Updated ${o.path} (${formatChars(o.chars)} chars)`,
+				)
 			}
 		}
 		running = false
 	}
 
 	await run()
-	if (verbose) console.log('Watching for changes...')
+	if (verbose)
+		console.log(`${createAgentsMdPrefix()}: 👀 Watching for changes...`)
 	let timer: NodeJS.Timeout | undefined
 	fs.watch(cwd, { recursive: true }, (_e, file) => {
 		if (!file || running) return
