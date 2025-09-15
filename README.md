@@ -2,7 +2,7 @@
 
 > Let's make [AGENTS.md](https://agents.md/) great again! :joy:
 
-Compose canonical `AGENTS.md` from sustainable file structures and plugins. Keep agent context current, composable, and shareable with your human docs. Abstract-context-as-code is what we aim to achieve.
+Compose canonical `AGENTS.md` from sustainable file structures. Keep agent context current, composable, and shareable with your human docs. Abstract-context-as-code is what we aim to achieve.
 
 ## Why agents-md?
 
@@ -17,9 +17,9 @@ agents-md focuses on improving flexibility and extensibility of `AGENTS.md`, whi
 
 ## Overview
 
-- Inputs (fragment files): default Markdown files in `**/agents-md/**/*.md` and `**/*.agents.md`, plus plugin‑generated content. All file structures are configurable.
+- Inputs (fragment files): default Markdown files in `**/agents-md/**/*.md` and `**/*.agents.md`. All file structures are configurable.
 - Outputs (`AGENTS.md` target files): One `AGENTS.md` per target directory (nearest‑wins by default) with deterministic ordering and source annotations.
-- Routing: Markdown directives and config rules map fragments to targets.
+- Routing: Markdown directives map fragments to targets.
 - Interop: Optional `CLAUDE.md` can import `@AGENTS.md` for tools that don't read `AGENTS.md`.
 
 ## Quick Start
@@ -42,7 +42,7 @@ To have multiple `AGENTS.md` files for dynamic location-based context, simply ad
 - `agents-md init`
   - Initialize agents-md in this project.
 - `agents-md compose`
-  - Build outputs from fragments and plugins.
+  - Build outputs from fragments.
 - `agents-md report [--json]`
   - Show outputs, sizes (k chars), token estimates, and warnings (use `--json` for CI).
 - `agents-md watch`
@@ -62,13 +62,10 @@ Key options
 | `include` | `string[]` | `['**/agents-md/**/*.md','**/*.agents.md']` | Fragment discovery globs |
 | `exclude` | `string[]` | `['**/node_modules/**','**/.git/**']` | Ignore patterns |
 | `includeFiles` | `(ctx) => boolean` | `undefined` | Advanced per‑file filter |
-| `targets` | `TargetRule[]` | `undefined` | Explicit output directories/rules |
 | `defaultTarget` | `'nearest'|'root'` | `'nearest'` | Fallback routing behavior |
-| `order` | 'path', 'weight', or 'explicit' | `'path'` | Fragment sort strategy |
 | `annotateSources` | `boolean` | `true` | Wrap fragments with `<!-- source: ... -->` / `<!-- /source: ... -->` comments |
-| `truncate` | `{ atBytes, strategy }` | `undefined` | Trim oversized outputs |
+| `truncate` | `{ atChars, strategy }` | `undefined` | Trim oversized outputs |
 | `limits` | `{ warn/max source/output }` | `undefined` | Size limits and warnings |
-| `plugins` | `Plugin[]` | `[]` | Generate extra fragments from code |
 
 ### Markdown Directives
 
@@ -87,10 +84,10 @@ Rules: keys are comma/space separated (`key=value`); paths start with `@` for Cl
 
 ## Composition Model
 
-- Discovery: collect fragments from `include` globs and plugin `scan()`.
-- Targeting: directive > `targets` rules > `defaultTarget` (nearest).
+- Discovery: collect fragments from `include` globs.
+- Targeting: directive > `defaultTarget` (nearest).
 - Ordering: by `weight`, then by path (stable and deterministic).
-- Annotation: optionally wrap fragments with `<!-- source: path | plugin -->` and `<!-- /source: path | plugin -->` comments.
+- Annotation: optionally wrap fragments with `<!-- source: path -->` and `<!-- /source: path -->` comments.
 - Output: write one `AGENTS.md` per selected target with a generated‑file banner.
 
 ## Reporting
@@ -107,7 +104,7 @@ Rules: keys are comma/space separated (`key=value`); paths start with `@` for Cl
 
 ## FAQ
 
-- Why not hand‑write `AGENTS.md`? Fragments scale better, enable reuse, and keep context fresh via plugins.
+- Why not hand‑write `AGENTS.md`? Fragments scale better and enable reuse.
 - Do I need a local and a root config? No — start with zero‑config or a single root file.
 - Are directives required? No — they only override defaults when needed.
 

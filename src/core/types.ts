@@ -6,6 +6,13 @@ export interface AgentsMdConfig {
 	includeFiles?: (ctx: { path: string; cwd: string }) => boolean
 	defaultTarget?: 'nearest' | 'root'
 	annotateSources?: boolean
+	truncate?: { atChars: number; strategy?: 'end' | 'middle' }
+	limits?: {
+		warnSourceChars?: number
+		maxSourceChars?: number
+		warnOutputChars?: number
+		maxOutputChars?: number
+	}
 }
 
 export interface Fragment {
@@ -30,4 +37,5 @@ export interface Output {
 export interface JsonReport {
 	outputs: Output[]
 	totals: { outputs: number; chars: number; sources: number }
+	limits?: { violated: boolean; details: string[] }
 }

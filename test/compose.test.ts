@@ -3,6 +3,7 @@ import { promises as fs } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { compose } from '../src/core/compose'
+import { summarize } from '../src/core/report'
 
 test('compose fragments into targets', async () => {
 	const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'agents-md-'))
@@ -140,4 +141,35 @@ test('compose does not rewrite unchanged outputs', async () => {
 	await compose({ cwd: tmp })
 	const second = await fs.stat(path.join(tmp, 'AGENTS.md'))
 	expect(second.mtimeMs).toBe(first.mtimeMs)
+})
+
+test('truncate oversized outputs', async () => {
+	const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'agents-md-trunc-'))
+	await fs.writeFile(path.join(tmp, 'a.agents.md'), 'A'.repeat(200))
+	const outputs = await compose({
+		cwd: tmp,
+		annotateSources: false,
+		truncate: { atChars: 100 },
+	})
+	const out = await fs.readFile(path.join(tmp, 'AGENTS.md'), 'utf8')
+	expect(outputs[0].chars).toBe(100)
+	expect(Array.from(out).length).toBe(100)
+	expect(out.includes('A'.repeat(18))).toBe(false)
+})
+
+test('limits flag oversized sources and outputs', async () => {
+	const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'agents-md-limits-'))
+	await fs.writeFile(path.join(tmp, 'a.agents.md'), 'A'.repeat(60))
+	const outputs = await compose({ cwd: tmp, annotateSources: false })
+	const summary = summarize(outputs, {
+		limits: { warnOutputChars: 100, maxSourceChars: 50 },
+	})
+	expect(summary.limits).toBeDefined()
+	expect(
+		summary.limits?.details.some((d) => d.includes('AGENTS.md exceeds warn')),
+	).toBe(true)
+	expect(
+		summary.limits?.details.some((d) => d.includes('a.agents.md exceeds max')),
+	).toBe(true)
+	expect(summary.limits?.violated).toBe(true)
 })
