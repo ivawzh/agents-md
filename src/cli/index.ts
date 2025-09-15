@@ -2,6 +2,7 @@
 import yargs, { type ArgumentsCamelCase, type Argv } from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { compose } from '../core/compose'
+import { loadConfig } from '../core/config'
 import { formatChars } from '../core/format'
 import { init } from '../core/init'
 import { summarize } from '../core/report'
@@ -16,7 +17,7 @@ export async function run(
 			'initialize agents-md in this project',
 			() => {},
 			async () => {
-				const config = {}
+				const config = await loadConfig(process.cwd())
 				const outputs = await init(config)
 				for (const o of outputs) {
 					console.log(`wrote ${o.path} (${formatChars(o.chars)} chars)`)
@@ -33,7 +34,7 @@ export async function run(
 			'compose AGENTS.md files',
 			() => {},
 			async () => {
-				const config = {}
+				const config = await loadConfig(process.cwd())
 				const outputs = await compose(config)
 				for (const o of outputs) {
 					console.log(`wrote ${o.path} (${formatChars(o.chars)} chars)`)
@@ -50,7 +51,7 @@ export async function run(
 			'compose and report outputs',
 			(y: Argv) => y.option('json', { type: 'boolean' }),
 			async (args: ArgumentsCamelCase<{ json?: boolean }>) => {
-				const config = {}
+				const config = await loadConfig(process.cwd())
 				const outputs = await compose(config)
 				const summary = summarize(outputs, config)
 				if (args.json) {
@@ -77,7 +78,8 @@ export async function run(
 			'watch and recompose on changes',
 			() => {},
 			async () => {
-				await watch({})
+				const config = await loadConfig(process.cwd())
+				await watch(config)
 			},
 		)
 		.demandCommand()

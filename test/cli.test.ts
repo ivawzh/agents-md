@@ -82,3 +82,19 @@ test('cli report prints friendly output', async () => {
 	expect(out).toMatch(/k chars/)
 	expect(out).toContain('Totals: 1 AGENTS.md files')
 })
+
+test('cli compose respects config include globs', async () => {
+	const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'agents-md-cli-config-'))
+	await fs.mkdir(path.join(tmp, 'docs'), { recursive: true })
+	await fs.writeFile(path.join(tmp, 'docs/design.md'), 'Design')
+	await fs.writeFile(
+		path.join(tmp, 'agents-md.config.ts'),
+		"import type { AgentsMdConfig } from 'agents-md'\n\n" +
+			'export default {\n' +
+			"  include: ['**/docs/**/*.md'],\n" +
+			'} satisfies AgentsMdConfig\n',
+	)
+	await runCli(tmp, ['compose'])
+	const out = await fs.readFile(path.join(tmp, 'AGENTS.md'), 'utf8')
+	expect(out).toContain('Design')
+})
