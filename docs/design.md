@@ -65,7 +65,7 @@ Internal spec and implementation plan. The README is the user intro; this file i
   - JSON view for machine readability
 
 - `agents-md watch`
-  - Rebuild on changes.
+  - Rebuild on changes quietly; `--verbose` prints logs.
 
 Exit codes: 0 ok, 1 error, 2 invalid config, 4 limit violation.
 
