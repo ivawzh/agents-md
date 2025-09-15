@@ -26,8 +26,8 @@ export function parseDirectives(markdown: string): Directive {
 					...value.split(',').map((s) => ({ path: s.trim(), line })),
 				)
 				break
-			case 'weight':
-				directive.weight = Number.parseInt(value, 10)
+			case 'priority':
+				directive.priority = Number.parseInt(value, 10)
 				break
 			case 'title':
 				directive.title = value
