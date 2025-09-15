@@ -82,6 +82,22 @@ test('config include/exclude/includeFiles options', async () => {
 	expect(out).not.toMatch(/\nC\n/)
 })
 
+test('adding include globs picks up existing files', async () => {
+	const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'agents-md-include-'))
+	await fs.mkdir(path.join(tmp, 'docs'), { recursive: true })
+	await fs.writeFile(path.join(tmp, 'docs/guide.md'), 'Guide')
+	await fs.writeFile(path.join(tmp, 'a.agents.md'), 'A')
+	await compose({ cwd: tmp })
+	let out = await fs.readFile(path.join(tmp, 'AGENTS.md'), 'utf8')
+	expect(out).not.toContain('Guide')
+	await compose({
+		cwd: tmp,
+		include: ['**/agents-md/**/*.md', '**/*.agents.md', '**/docs/**/*.md'],
+	})
+	out = await fs.readFile(path.join(tmp, 'AGENTS.md'), 'utf8')
+	expect(out).toContain('Guide')
+})
+
 test('higher priority surfaces earlier', async () => {
 	const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'agents-md-priority-'))
 	await fs.writeFile(path.join(tmp, 'a.agents.md'), 'A')

@@ -27,7 +27,13 @@ export async function init(
 	const configPath = path.join(cwd, 'agents-md.config.ts')
 	if (!existsSync(configPath)) {
 		const body =
-			"import type { AgentsMdConfig } from 'agents-md'\nexport default { include: ['**/agents-md/**/*.md', '**/*.agents.md'] } satisfies AgentsMdConfig\n"
+			"import type { AgentsMdConfig } from 'agents-md'\n\n" +
+			'export default {\n' +
+			'  include: [\n' +
+			"    '**/agents-md/**/*.md',\n" +
+			"    '**/*.agents.md',\n" +
+			'  ],\n' +
+			'} satisfies AgentsMdConfig\n'
 		await fs.writeFile(configPath, body)
 		console.log('created agents-md.config.ts')
 	}
