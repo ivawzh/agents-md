@@ -63,7 +63,7 @@ Key options
 | `exclude` | `string[]` | `['**/node_modules/**','**/.git/**']` | Ignore patterns |
 | `includeFiles` | `(ctx) => boolean` | `undefined` | Advanced per‑file filter |
 | `defaultTarget` | `'nearest'|'root'` | `'nearest'` | Fallback routing behavior |
-| `annotateSources` | `boolean` | `true` | Wrap fragments with `<!-- source: ... -->` / `<!-- /source: ... -->` comments |
+| `annotateSources` | `boolean` | `true` | Wrap fragments with `<!-- source: ... priority=n -->` / `<!-- /source: ... -->` comments |
 | `truncate` | `{ atChars, strategy }` | `undefined` | Trim oversized outputs |
 | `limits` | `{ warn/max source/output }` | `undefined` | Size limits and warnings |
 
@@ -77,7 +77,7 @@ Key options
   - `<!-- agents-md: import=@./shared/common.md -->`
   - `<!-- agents-md: import=@../standards/api.md -->`
 - Ordering and metadata
-  - `<!-- agents-md: weight=10 -->` (lower numbers surface earlier)
+  - `<!-- agents-md: priority=10 -->` (higher numbers surface earlier)
   - `<!-- agents-md: title="My Section" -->` (optional heading hint)
 
 Rules: keys are comma/space separated (`key=value`); paths start with `@` for Claude Code compatibility; resolution is relative to the fragment file.
@@ -86,7 +86,7 @@ Rules: keys are comma/space separated (`key=value`); paths start with `@` for Cl
 
 - Discovery: collect fragments from `include` globs.
 - Targeting: directive > `defaultTarget` (nearest).
-- Ordering: by `weight` (ascending), then by path (stable and deterministic).
+- Ordering: by `priority` (descending), then by path (stable and deterministic).
 - Annotation: optionally wrap fragments with `<!-- source: path -->` and `<!-- /source: path -->` comments.
 - Output: write one `AGENTS.md` per selected target with a generated‑file banner.
 

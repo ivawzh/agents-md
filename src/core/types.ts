@@ -24,7 +24,7 @@ export interface Fragment {
 export interface Directive {
 	target?: string
 	imports?: { path: string; line: number }[]
-	weight?: number
+	priority?: number
 	title?: string
 }
 
