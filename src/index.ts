@@ -1,4 +1,5 @@
 export { compose } from './core/compose'
+export { loadConfig } from './core/config'
 export { parseDirectives } from './core/directives'
 export { init } from './core/init'
 export { summarize } from './core/report'
