@@ -3,8 +3,9 @@ import { spawn } from 'node:child_process'
 import { promises as fs } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname)
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function runCli(cwd: string, args: string[]): Promise<string> {
 	return new Promise((resolve, reject) => {
