@@ -43,6 +43,7 @@ Internal spec and implementation plan. The README is the user intro; this file i
 ## CLI Spec
 
 - `agents-md init`
+  - If a config or generated `AGENTS.md` is present, print a reminder to run `agents-md compose` and exit.
   - If `CLAUDE.md` exists, move it to `project.agents.md` and edit `CLAUDE.md` to onliner `@AGENTS.md`.
   - Move any existing `AGENTS.md` files' content to `<"project" | directory-name>.agents.md`.
   - Create a config file `agents-md.config.ts` with defaults.
@@ -82,7 +83,7 @@ Exit codes: 0 ok, 1 error, 2 invalid config, 4 limit violation.
     bun agents-md init
     ```
 
-    This will move any existing `AGENTS.md` or `CLAUDE.md` files to `<"project" if root | directory-name>.agents.md` and scaffold a config file `agents-md.config.ts` to get started quickly.
+    This will move any existing `AGENTS.md` or `CLAUDE.md` files to `<"project" if root | directory-name>.agents.md` and scaffold a config file `agents-md.config.ts` to get started quickly. If a config or generated `AGENTS.md` already exists, it prints a reminder to run `agents-md compose` instead.
 
     **Important**: `AGENTS.md` files are now codegen and managed by agents-md. ***We SHOULD NOT HAND-WRITE `AGENTS.md` files anymore***.
 
