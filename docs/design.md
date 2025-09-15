@@ -165,7 +165,7 @@ Config discovery: look for `agents-md.config.ts`, then `.mjs`/`.js`; ignore loca
 - Supported keys:
   - `target`: `nearest` | `root` | relative dir (e.g., `../docs`) | named target.
   - `import`: `@<relative-path>`; multiple allowed; processed in order.
-  - `weight`: integer; lower sorts first among same target.
+  - `weight`: integer; lower numbers surface earlier among same target.
   - `title`: string; optional section heading hint (no auto‑insertion by core).
 - Precedence: directives > `defaultTarget`.
 - Errors: missing import files (warn), circular imports (error), unknown target (warn).

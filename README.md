@@ -2,7 +2,7 @@
 
 > Let's make [AGENTS.md](https://agents.md/) great again! :joy:
 
-Compose canonical `AGENTS.md` from sustainable file structures. Keep agent context current, composable, and shareable with your human docs. Abstract-context-as-code is what we aim to achieve.
+Compose canonical `AGENTS.md` from sustainable and elegant file structures. Keep agent context current, composable, and shareable with your human docs. Abstract-context-as-code is what we aim to achieve.
 
 ## Why agents-md?
 
@@ -77,7 +77,7 @@ Key options
   - `<!-- agents-md: import=@./shared/common.md -->`
   - `<!-- agents-md: import=@../standards/api.md -->`
 - Ordering and metadata
-  - `<!-- agents-md: weight=10 -->` (lower sorts first)
+  - `<!-- agents-md: weight=10 -->` (lower numbers surface earlier)
   - `<!-- agents-md: title="My Section" -->` (optional heading hint)
 
 Rules: keys are comma/space separated (`key=value`); paths start with `@` for Claude Code compatibility; resolution is relative to the fragment file.
@@ -86,7 +86,7 @@ Rules: keys are comma/space separated (`key=value`); paths start with `@` for Cl
 
 - Discovery: collect fragments from `include` globs.
 - Targeting: directive > `defaultTarget` (nearest).
-- Ordering: by `weight`, then by path (stable and deterministic).
+- Ordering: by `weight` (ascending), then by path (stable and deterministic).
 - Annotation: optionally wrap fragments with `<!-- source: path -->` and `<!-- /source: path -->` comments.
 - Output: write one `AGENTS.md` per selected target with a generated‑file banner.
 
