@@ -47,8 +47,14 @@ test('cli init scaffolds config and migrates AGENTS.md', async () => {
 		path.join(tmp, 'agents-md.config.ts'),
 		'utf8',
 	)
-	expect(config).toContain(
-		"include: ['**/agents-md/**/*.md', '**/*.agents.md']",
+	expect(config).toBe(
+		"import type { AgentsMdConfig } from 'agents-md'\n\n" +
+			'export default {\n' +
+			'  include: [\n' +
+			"    '**/agents-md/**/*.md',\n" +
+			"    '**/*.agents.md',\n" +
+			'  ],\n' +
+			'} satisfies AgentsMdConfig\n',
 	)
 	const generated = await fs.readFile(path.join(tmp, 'AGENTS.md'), 'utf8')
 	expect(generated).toContain('Legacy')
