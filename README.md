@@ -1,9 +1,10 @@
 # agents-md
 
 ```bash
-# 1. Seed a couple of fragments with priorities
-printf '<!-- agents-md: priority=1 -->\nGeneral tips\n' > docs/notes.agents.md
-printf '<!-- agents-md: priority=5 -->\nHot fix first\n' > docs/urgent.agents.md
+# 1. Write your context documents in flexible file structures
+printf 'UI tips\n' > design/ui.agents.md
+printf 'Utility TODOs\n' > packages/sdk/src/utils/todo.agents.md
+printf 'Architecture notes\n' > agents-md/architecture.md
 
 # 2. Compose canonical AGENTS.md files
 bun agents-md compose
@@ -11,6 +12,12 @@ bun agents-md compose
 # 3. Inspect the generated output
 cat AGENTS.md
 ```
+
+Write your context documents in flexible file structures, for example:
+
+- `design/ui.agents.md`
+- `packages/sdk/src/utils/todo.agents.md`
+- `agents-md/architecture.md`
 
 > Let's make [AGENTS.md](https://agents.md/) great again! :joy:
 
