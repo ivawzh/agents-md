@@ -2,17 +2,39 @@
 
 > Let's make [AGENTS.md](https://agents.md/) great again! :joy:
 
+## The Problem
+
+Your project grows, but your `AGENTS.md` doesn't scale:
+
 ```bash
-# 1. Write your context documents in flexible file structures
-printf 'UI tips\n' > design/ui.agents.md
-printf 'Utility TODOs\n' > packages/sdk/src/utils/todo.agents.md
-printf 'Architecture notes\n' > agents-md/architecture.md
+project/
+├── AGENTS.md     ← single file, static name, impossible to sustain
+├── docs/
+├── api/
+```
 
-# 2. Compose canonical AGENTS.md files
-bunx agents-md compose
+## The Solution
 
-# 3. Inspect the generated output
-cat AGENTS.md
+Split context into organized fragments, then compose:
+
+```bash
+project/
+├── AGENTS.md                ← auto-generated
+├── docs/
+│   └── overview.agents.md   ← parsed
+├── api/
+│   ├── AGENTS.md            ← auto-generated
+│   └── endpoints.agents.md  ← parsed
+├── agents-md/
+│   └── epics/
+│       └── epic-one.md      ← parsed
+│       └── epic-two.md      ← parsed
+```
+
+**One command builds them all:**
+
+```bash
+npx agents-md compose
 ```
 
 Compose canonical `AGENTS.md` from sustainable and elegant file structures. Keep agent context current, composable, and shareable with your human docs. Abstract-context-as-code is what we aim to achieve.
