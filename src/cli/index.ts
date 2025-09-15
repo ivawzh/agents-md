@@ -76,10 +76,10 @@ export async function run(
 		.command(
 			'watch',
 			'watch and recompose on changes',
-			() => {},
-			async () => {
+			(y: Argv) => y.option('verbose', { type: 'boolean' }),
+			async (args: ArgumentsCamelCase<{ verbose?: boolean }>) => {
 				const config = await loadConfig(process.cwd())
-				await watch(config)
+				await watch({ ...config, verbose: args.verbose })
 			},
 		)
 		.demandCommand()

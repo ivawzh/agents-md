@@ -64,8 +64,8 @@ To have multiple `AGENTS.md` files for dynamic location-based context, simply ad
   - Build outputs from fragments.
 - `agents-md report [--json]`
   - Show outputs, sizes (k chars), token estimates, and warnings (use `--json` for CI).
-- `agents-md watch`
-  - Rebuild on changes.
+- `agents-md watch [--verbose]`
+  - Rebuild on changes silently; use `--verbose` to log rebuilds.
 - `agents-md help|version`
 
 Exit codes: `0` success, `1` generic error, `2` invalid config, `4` limit violation.
