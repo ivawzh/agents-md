@@ -21,6 +21,9 @@
 			}
 		}
 	},
+	"bin": {
+		"agents-md": "dist/cli.js"
+	},
 	"scripts": {
 		"build": "bunup",
 		"dev": "bunup --watch",
@@ -32,12 +35,13 @@
 		"test": "bun test",
 		"test:watch": "bun test --watch",
 		"test:coverage": "bun test --coverage",
-		"release": "bumpp --commit --push --tag",
+		"release": "bun run build && npm publish",
 		"prepare": "simple-git-hooks"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.2.4",
 		"@types/bun": "^1.2.21",
+		"@types/yargs": "^17.0.33",
 		"bumpp": "^10.2.3",
 		"bunup": "^0.12.0",
 		"simple-git-hooks": "^2.13.1",
@@ -62,5 +66,13 @@
 	"bugs": {
 		"url": "https://github.com/ivawzh/agents-md/issues"
 	},
-	"license": "MIT"
+	"license": "MIT",
+	"engines": {
+		"node": ">=18",
+		"bun": ">=1"
+	},
+	"dependencies": {
+		"fast-glob": "^3.3.3",
+		"yargs": "^18.0.0"
+	}
 }
