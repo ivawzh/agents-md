@@ -52,8 +52,8 @@ test('watch verbose logs once for missing imports and outputs', async () => {
 	await new Promise((r) => setTimeout(r, 1000))
 	proc.kill()
 	await new Promise((r) => proc.on('exit', r))
-	const missing = out.match(/missing import/g) ?? []
-	const wrote = out.match(/wrote AGENTS.md/g) ?? []
+	const missing = out.match(/Missing import/g) ?? []
+	const wrote = out.match(/Updated AGENTS.md/g) ?? []
 	expect(missing.length).toBe(1)
 	expect(wrote.length).toBe(1)
 })
