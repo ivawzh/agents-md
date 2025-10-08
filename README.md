@@ -1,6 +1,6 @@
 # agents-md
 
-> Let's make [AGENTS.md](https://agents.md/) great again! :joy:
+We need an elegant and scalable vibe coding solution.
 
 ## The Problem
 
