@@ -7,6 +7,7 @@ import { formatChars } from '../core/format'
 import { init } from '../core/init'
 import { createAgentsMdPrefix } from '../core/logger'
 import { summarize } from '../core/report'
+import { setupHook } from '../core/setup'
 import { watch } from '../core/watch'
 
 export async function run(
@@ -88,6 +89,23 @@ export async function run(
 			async (args: ArgumentsCamelCase<{ verbose?: boolean }>) => {
 				const config = await loadConfig(process.cwd())
 				await watch({ ...config, verbose: args.verbose })
+			},
+		)
+		.command(
+			'setup:compose-before-commit',
+			'Setup pre-commit hook to auto-compose AGENTS.md files (works with any codebase)',
+			() => {},
+			async () => {
+				const result = await setupHook({
+					cwd: process.cwd(),
+					hookType: 'compose-before-commit',
+				})
+				if (result.success) {
+					console.log(`${createAgentsMdPrefix()}: ✓ ${result.message}`)
+				} else {
+					console.error(`${createAgentsMdPrefix()}: ✗ ${result.message}`)
+					process.exitCode = 1
+				}
 			},
 		)
 		.demandCommand()
