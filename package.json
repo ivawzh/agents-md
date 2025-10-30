@@ -25,7 +25,7 @@
 		"agents-md": "dist/cli/index.js"
 	},
 	"scripts": {
-		"build": "bunup",
+		"build": "bunup && chmod +x dist/cli/index.js",
 		"dev": "bunup --watch",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
@@ -35,8 +35,7 @@
 		"test": "bun test",
 		"test:watch": "bun test --watch",
 		"test:coverage": "bun test --coverage",
-		"release": "bun run build && npm publish",
-		"prepare": "simple-git-hooks"
+		"release": "bun run build && npm publish"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.2.4",
@@ -44,7 +43,6 @@
 		"@types/yargs": "^17.0.33",
 		"bumpp": "^10.2.3",
 		"bunup": "^0.12.0",
-		"simple-git-hooks": "^2.13.1",
 		"typescript": "^5.9.2"
 	},
 	"repository": {
@@ -58,9 +56,6 @@
 		"typescript": {
 			"optional": true
 		}
-	},
-	"simple-git-hooks": {
-		"pre-commit": "bun run lint:fix && git add ."
 	},
 	"homepage": "https://github.com/ivawzh/agents-md#readme",
 	"bugs": {

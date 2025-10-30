@@ -41,18 +41,49 @@ Compose canonical `AGENTS.md` from sustainable and elegant file structures. Keep
 
 ## Quick Start
 
-- Install: `bun install -D agents-md` (or `npm i -D`, `pnpm add -D`, `yarn add -D`)
-- Initialize: `bun agents-md init` (creates root `AGENTS.md` if missing)
+- Initialize: `npx agents-md init` (creates root `AGENTS.md` if missing)
 - Update fragment files in any of these path formats:
   - `**/agents-md/**/*.md`
   - `**/*.agents.md`
   - `**/<customised-directories>/*.md`
   - `**/*.<customised-file-formats>`
-- Compose: `bun agents-md compose`
+- Compose: `npx agents-md compose`
 
 Generated files are owned by agents-md. Don't hand‑edit `AGENTS.md` — edit source fragments instead.
 
 To have multiple `AGENTS.md` files for dynamic location-based context, simply add an empty `AGENTS.md` file in any target directory and rerun `bun agents-md compose`.
+
+## Git Integration
+
+Keep your `AGENTS.md` files automatically up-to-date with a pre-commit hook:
+
+```bash
+npx agents-md setup:compose-before-commit
+```
+
+The setup command **works with any git repository**, regardless of language (JavaScript, Python, Go, Rust, etc.):
+
+**What it does:**
+1. Creates a git hook in `.git/hooks/pre-commit`
+2. Makes it executable automatically
+3. Runs `npx agents-md compose` and stages AGENTS.md files before each commit
+
+**Performance tip:** For faster commits, install `agents-md` globally:
+```bash
+npm install -g agents-md
+```
+
+This avoids `npx` downloading the package on every commit.
+
+**To regenerate the hook** (after updating agents-md):
+```bash
+npx agents-md setup:compose-before-commit
+```
+
+**To bypass temporarily** (not recommended):
+```bash
+git commit --no-verify
+```
 
 ## Why agents-md?
 
@@ -80,6 +111,8 @@ Common pain points today:
   - Show outputs, sizes (k chars), token estimates, and warnings (use `--json` for CI).
 - `agents-md watch [--verbose]`
   - Rebuild on changes silently; use `--verbose` to log rebuilds.
+- `agents-md setup:compose-before-commit`
+  - Setup pre-commit hook to auto-compose AGENTS.md files before each commit (works with any codebase: Node.js, Python, Go, etc.).
 - `agents-md help|version`
 
 Exit codes: `0` success, `1` generic error, `2` invalid config, `4` limit violation.
